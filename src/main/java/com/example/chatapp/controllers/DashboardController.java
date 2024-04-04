@@ -1,12 +1,15 @@
 package com.example.chatapp.controllers;
 
+import com.example.chatapp.ChatApplication;
 import com.example.chatapp.models.User;
 import com.example.chatapp.utils.UserProps;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
@@ -16,6 +19,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -71,11 +75,29 @@ public class DashboardController implements Initializable {
         String messageToServer = String.join(",", new String[]{"SEND_TEXT", user.getUsername(), userChattingWith.getValue(), message});
         try {
             userProps.getDataOutputStream().writeUTF(messageToServer);
+            userProps.getDataOutputStream().flush();
         } catch (IOException e) {
             System.out.println("Error sending message to server");
         }
         System.out.println(messagesContainer.getHeight());
         chatInput.clear();
+    }
+
+    @FXML
+    public void onLogout(){
+        try{
+            userProps.getDataOutputStream().writeUTF("LOG_OUT");
+            userProps.getDataOutputStream().flush();
+            var stage = (Stage)dashboardContainer.getScene().getWindow();
+            stage.close();
+            Scene dashboardScene = new Scene(new FXMLLoader(ChatApplication.class.getResource("views/login.fxml")).load());
+
+            stage.setScene(dashboardScene);
+            stage.show();
+        }catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error logging out");
+        }
     }
 
     @Override
@@ -172,28 +194,26 @@ public class DashboardController implements Initializable {
                                 }
                             }
                         });
-//                    String chat = (String) cbOnlineUsers.getSelectedItem();
-//                    cbOnlineUsers.removeAllItems();
-//                    boolean isChattingOnline = false;
-//
-//                    for (String u : users) {
-//                        if (u.equals(account.getUserName()) == false) {
-//                            // Cập nhật danh sách các người dùng trực tuyến vào ComboBox onlineUsers (trừ bản thân)
-//                            cbOnlineUsers.addItem(u);
-//                            if (messageContent.get(u) == null) {
-//                                messageContent.put(u, "");
-//                            }
-//                        }
-//                        if ((chat != null) && chat.equals(u)) {
-//                            isChattingOnline = true;
-//                        }
-//                    }
-//                    if (isChattingOnline == true) {
-//                        cbOnlineUsers.setSelectedItem(chat);
-//                    } else if (cbOnlineUsers.getSelectedItem() != null) {
-//                        cbOnlineUsers.setSelectedIndex(0);
-//                    }
-//                    cbOnlineUsers.validate();
+
+                    } else if (messageReceived[0].equals("GET_MESSAGES")) {
+
+                        try {
+                            String prepareMessage = messageReceived[1];
+                            String[] messages = prepareMessage.split("\\|\\|");
+                            Platform.runLater(() -> {
+                                messagesContainer.getChildren().clear();
+                            });
+                            for (String message : messages) {
+                                String[] messageParts = message.split("\\|");
+                                String content = messageParts[0];
+                                boolean isSender = Boolean.parseBoolean(messageParts[1]);
+                                Platform.runLater(() -> {
+                                    appendMessage(content, isSender);
+                                });
+                            }
+                        }catch (Exception e){
+                            System.out.println("No messages found...");
+                        }
                     }
 
                 }
@@ -221,7 +241,12 @@ public class DashboardController implements Initializable {
         HBox.setMargin(onlineUserContainer, new javafx.geometry.Insets(10, 0, 0, 0));
         onlineUserContainer.setId(username);
         onlineUserContainer.setOnMouseClicked( e  -> {
-
+            try {
+                userProps.getDataOutputStream().writeUTF("GET_MESSAGES," + user.getUsername() + "," + username);
+                userProps.getDataOutputStream().flush();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
             userChattingWith.set(username);
 
             onlineUsersBox.getChildren().forEach(child -> {

@@ -1,6 +1,9 @@
 package com.example.chatapp.controllers;
 
+import com.example.chatapp.daos.MessageDAO;
+import com.example.chatapp.models.Message;
 import com.example.chatapp.models.User;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -30,7 +33,7 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
         label:
-        while(true){
+        while(!clientSocket.isClosed()){
             try {
 
                 String inputData = input.readUTF();
@@ -43,7 +46,7 @@ public class ClientHandler implements Runnable {
 
                 switch (messageType) {
                     case "LOG_OUT":
-                        ServerController.logoutClient(this);
+                        ServerController.logoutClient(ClientHandler.this);
                         clientSocket.close();
                         ServerController.updateOnlineUsers();
                         break;
@@ -54,11 +57,17 @@ public class ClientHandler implements Runnable {
 
                         for (ClientHandler client : ServerController.clients) {
                             if (client.getUsername().equals(receiverUsername)) {
-                                DataOutputStream receiverOutput = client.getOutputStream();
-                                String sendMessage = String.join(",", new String[]{"SEND_TEXT", senderUsername, receiverUsername, messageContent});
-                                System.out.println("sendMessage: "+ sendMessage);
-                                receiverOutput.writeUTF(sendMessage);
-                                receiverOutput.flush();
+                                if(MessageDAO.save(new Message(senderUsername, receiverUsername, messageContent))){
+                                    System.out.println("Message saved");
+                                    DataOutputStream receiverOutput = client.getOutputStream();
+                                    String sendMessage = String.join(",", new String[]{"SEND_TEXT", senderUsername, receiverUsername, messageContent});
+                                    System.out.println("sendMessage: "+ sendMessage);
+                                    receiverOutput.writeUTF(sendMessage);
+                                    receiverOutput.flush();
+                                } else {
+                                    System.out.println("Message not saved");
+                                }
+
                             }
                         }
                         break;
@@ -90,15 +99,26 @@ public class ClientHandler implements Runnable {
                         break;
                     }
                     case "GET_MESSAGES": {
+                        System.out.println("HEREE");
                         String senderUsername = messages[1];
                         String receiverUsername = messages[2];
+                        var result = MessageDAO.getMessages(senderUsername, receiverUsername);
+                        StringBuilder prepareMessage = new StringBuilder();
+                        for (Message message : result) {
+                            prepareMessage.append(message.getContent()).append("|").append(message.getSender().equals(senderUsername)).append("||");
+                        }
 
-//                        String messagesContent = ServerController.getMessages(senderUsername, receiverUsername);
-//                        String sendMessage = String.join(",", new String[]{"GET_MESSAGES", senderUsername, receiverUsername, messagesContent});
-//                        output.writeUTF(sendMessage);
-//                        output.flush();
+                        for (ClientHandler client : ServerController.clients) {
+                            if (client.getUsername().equals(senderUsername)) {
+                                client.getOutputStream().writeUTF("GET_MESSAGES," + prepareMessage.toString());
+                                client.getOutputStream().flush();
+                                break;
+
+                            }
+                        }
                         break;
                     }
+
                     default: {
 
                         System.out.println("Invalid messageType: ");
@@ -108,6 +128,9 @@ public class ClientHandler implements Runnable {
 
             } catch (IOException e) {
                 System.out.println("ERROR HEREEEE");
+                e.printStackTrace();
+                closeAll();
+            } catch (Exception e) {
                 e.printStackTrace();
                 closeAll();
             }

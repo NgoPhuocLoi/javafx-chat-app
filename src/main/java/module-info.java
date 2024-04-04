@@ -3,6 +3,7 @@ module com.example.chatapp {
     requires javafx.fxml;
     requires mysql.connector.j;
     requires java.sql;
+    requires com.fasterxml.jackson.databind;
 
 
     opens com.example.chatapp to javafx.fxml;

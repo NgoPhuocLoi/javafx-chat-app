@@ -16,55 +16,9 @@
 
 <BorderPane fx:id="dashboardContainer" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="791.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.chatapp.controllers.DashboardController">
    <left>
-      <HBox prefHeight="400.0" prefWidth="300.0" BorderPane.alignment="CENTER">
+      <HBox prefHeight="400.0" prefWidth="253.0" BorderPane.alignment="CENTER">
          <children>
-            <VBox prefHeight="400.0" prefWidth="60.0" styleClass="dark-gray-bg" stylesheets="@../../../../styles/style.css">
-               <children>
-                  <Pane prefHeight="60.0" prefWidth="100.0" />
-                  <ImageView fitHeight="48.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@../../../../images/icons8-chat-50.png" />
-                     </image>
-                     <VBox.margin>
-                        <Insets left="10.0" top="10.0" />
-                     </VBox.margin>
-                  </ImageView>
-                  <ImageView fitHeight="48.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@../../../../images/icons8-chat-50.png" />
-                     </image>
-                     <VBox.margin>
-                        <Insets left="10.0" />
-                     </VBox.margin>
-                  </ImageView>
-                  <ImageView fitHeight="48.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@../../../../images/icons8-chat-50.png" />
-                     </image>
-                     <VBox.margin>
-                        <Insets left="10.0" top="10.0" />
-                     </VBox.margin>
-                  </ImageView>
-                  <ImageView fitHeight="48.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@../../../../images/icons8-chat-50.png" />
-                     </image>
-                     <VBox.margin>
-                        <Insets left="10.0" top="10.0" />
-                     </VBox.margin>
-                  </ImageView>
-                  <Pane prefHeight="60.0" prefWidth="85.0" />
-                  <ImageView fitHeight="48.0" fitWidth="38.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@../../../../images/icons8-chat-50.png" />
-                     </image>
-                     <VBox.margin>
-                        <Insets left="10.0" />
-                     </VBox.margin>
-                  </ImageView>
-               </children>
-            </VBox>
-            <VBox prefHeight="400.0" prefWidth="240.0" styleClass="gray-bg" stylesheets="@../../../../styles/style.css">
+            <VBox prefHeight="400.0" prefWidth="252.0" styleClass="gray-bg" stylesheets="@../../../../styles/style.css">
                <children>
                   <HBox alignment="CENTER_LEFT" prefHeight="54.0" prefWidth="181.0">
                      <children>
@@ -78,6 +32,14 @@
                               <Font name="System Bold" size="16.0" />
                            </font>
                         </Label>
+                        <ImageView fx:id="logoutBtn" fitHeight="28.0" fitWidth="27.0" onMouseClicked="#onLogout" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../../../../images/logout.png" />
+                           </image>
+                           <HBox.margin>
+                              <Insets left="40.0" />
+                           </HBox.margin>
+                        </ImageView>
                      </children>
                      <padding>
                         <Insets left="10.0" />

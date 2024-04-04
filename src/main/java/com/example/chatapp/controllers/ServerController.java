@@ -11,6 +11,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class ServerController {
     private ServerSocket server;
@@ -24,7 +25,7 @@ public class ServerController {
             Socket clientSocket;
             while (true) {
                 clientSocket = server.accept();
-
+                System.out.println("New client connected: " + clientSocket);
                 DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream());
                 DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
 
@@ -146,7 +147,13 @@ public class ServerController {
     }
 
     public static void logoutClient(ClientHandler clientHandler) {
-        clients.remove(clientHandler);
+
+        for(int i = 0; i < clients.size(); i++){
+            if(clientHandler.getUsername().equals(clients.get(i).getUsername())){
+                clients.remove(i);
+            }
+        }
+        System.out.println(clients.stream().map(ClientHandler::getUsername).collect(Collectors.joining(", ")));
         System.out.println("User with username: " + clientHandler.getUsername() + " has logged out");
     }
 
