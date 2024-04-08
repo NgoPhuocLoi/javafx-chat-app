@@ -1,6 +1,7 @@
 package com.example.chatapp.controllers;
 
 import com.example.chatapp.ChatApplication;
+import com.example.chatapp.daos.UserDAO;
 import com.example.chatapp.models.User;
 import com.example.chatapp.utils.UserProps;
 import javafx.application.Platform;
@@ -19,9 +20,11 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
@@ -67,12 +70,37 @@ public class DashboardController implements Initializable {
     ScrollPane chatScrollPane;
 
     @FXML
+    ImageView avatarImage;
+
+    @FXML
+    public void onChooseAvatar(){
+        Stage stage = (Stage) dashboardContainer.getScene().getWindow();
+        FileChooser fc = new FileChooser();
+        fc.setTitle("Choose a image");
+        FileChooser.ExtensionFilter imageFilter = new FileChooser.ExtensionFilter("Image Files", "*.jpg", "*.png");
+        fc.getExtensionFilters().add(imageFilter);
+        File file = fc.showOpenDialog(stage);
+        if (file != null){
+            System.out.println(file.toURI().toString());
+            try {
+                userProps.getDataOutputStream().writeUTF("CHANGE_AVATAR," + user.getUsername() + "," + file.toURI());
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.out.println("Error when changing avatar");
+            }
+            Image image = new Image(file.toURI().toString(),50, 50, false, true);
+            avatarImage.setImage(image);
+        }
+    }
+
+    @FXML
     public void onSendBtnClick()  {
 
         String message = chatInput.getText();
         System.out.println("Sending message: " + message);
-        appendMessage(message, true);
-        String messageToServer = String.join(",", new String[]{"SEND_TEXT", user.getUsername(), userChattingWith.getValue(), message});
+
+        appendMessage(message, true, user.getAvatarUrl());
+        String messageToServer = String.join(",", new String[]{"SEND_TEXT", user.getUsername(), userChattingWith.getValue(), message, user.getAvatarUrl().isEmpty() ? "NoAvatar" : user.getAvatarUrl()});
         try {
             userProps.getDataOutputStream().writeUTF(messageToServer);
             userProps.getDataOutputStream().flush();
@@ -103,7 +131,12 @@ public class DashboardController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         currentLoggedInUsername.setText(userProps.getUsername());
+        if(!userProps.getAvatarUrl().isEmpty()){
+            Image image = new Image(userProps.getAvatarUrl(),50, 50, false, true);
+            avatarImage.setImage(image);
+        }
         user.setUsername(userProps.getUsername());
+        user.setAvatarUrl(userProps.getAvatarUrl());
         if(userChattingWith.getValue() == null){
             chatContainer.setVisible(false);
         }
@@ -145,13 +178,14 @@ public class DashboardController implements Initializable {
                         String sender = messageReceived[1];
                         String receiver = messageReceived[2];
                         String message = messageReceived[3];
+                        String senderAvatar = messageReceived[4].equals("NoAvatar") ? "" : messageReceived[4];
                         // In tin nhắn lên màn hình chat với người gửi
 //                    newMessage(sender, receiver, message, false);
 //                    autoScroll();
                         if(Objects.equals(receiver, user.getUsername())){
                             if(Objects.equals(sender, userChattingWith.getValue())){
                                 Platform.runLater(() -> {
-                                    appendMessage(message, false);
+                                    appendMessage(message, false, senderAvatar);
                                 });  }
 
                             else {
@@ -184,13 +218,17 @@ public class DashboardController implements Initializable {
 
                     } else if (messageReceived[0].equals("Online users")) {
                         // Nhận yêu cầu cập nhật danh sách người dùng trực tuyến
-                        String[] users = input.readUTF().split(",");
+                        String[] users = input.readUTF().split("\\|");
+
                         System.out.println("Online users: " + Arrays.toString(users));
                         Platform.runLater(() -> {
                             onlineUsersBox.getChildren().clear();
                             for (String u : users) {
-                                if (!u.equals(user.getUsername())) {
-                                    appendOnlineUser(u, "", "");
+                                String[] userParts = u.split(",");
+                                String username = userParts[0];
+                                String avatarUrl = userParts[1];
+                                if (!username.equals(user.getUsername())) {
+                                    appendOnlineUser(username, avatarUrl.equals("NoAvatar") ? "" : avatarUrl, "");
                                 }
                             }
                         });
@@ -207,8 +245,9 @@ public class DashboardController implements Initializable {
                                 String[] messageParts = message.split("\\|");
                                 String content = messageParts[0];
                                 boolean isSender = Boolean.parseBoolean(messageParts[1]);
+                                String userAvatar = messageParts[2].equals("NoAvatar") ? "" : messageParts[2];
                                 Platform.runLater(() -> {
-                                    appendMessage(content, isSender);
+                                    appendMessage(content, isSender, userAvatar);
                                 });
                             }
                         }catch (Exception e){
@@ -258,9 +297,12 @@ public class DashboardController implements Initializable {
             });
         });
 
-        Image image = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/icons8-avatar-48.png")));
+        Image avatar = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/icons8-avatar-48.png")));
+        if(!avatarUrl.isEmpty()){
+            avatar = new Image(avatarUrl, 50, 50, false, true);
+        }
         ImageView userAvatar = new ImageView();
-        userAvatar.setImage(image);
+        userAvatar.setImage(avatar);
 
         Label usernameLabel = new Label();
         usernameLabel.setText(username);
@@ -284,12 +326,15 @@ public class DashboardController implements Initializable {
         onlineUsersBox.getChildren().add(onlineUserContainer);
     }
 
-    private void appendMessage(String message, boolean isSender){
+    private void appendMessage(String message, boolean isSender, String userAvatarUrl){
         HBox messageContainer = new HBox();
         Pos alignment = isSender ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT;
         messageContainer.setAlignment(alignment);
 
         Image image = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/icons8-avatar-48.png")));
+        if(!userAvatarUrl.isEmpty()){
+            image = new Image(userAvatarUrl, 40, 40, false, true);
+        }
         ImageView userAvatar = new ImageView();
         userAvatar.setImage(image);
 

@@ -28,3 +28,8 @@
     -fx-background-color: #50C984;
     -fx-background-radius: 20px;
 }
+
+.avatar-image{
+    -fx-border-radius: 50%;
+
+}

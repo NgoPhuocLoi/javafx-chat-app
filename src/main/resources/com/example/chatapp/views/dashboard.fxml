@@ -22,7 +22,7 @@
                <children>
                   <HBox alignment="CENTER_LEFT" prefHeight="54.0" prefWidth="181.0">
                      <children>
-                        <ImageView fitHeight="150.0" fitWidth="50.0" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fx:id="avatarImage" fitHeight="150.0" fitWidth="50.0" onMouseClicked="#onChooseAvatar" pickOnBounds="true" preserveRatio="true" styleClass="avatar-image">
                            <image>
                               <Image url="@../../../../images/icons8-avatar-48.png" />
                            </image>
@@ -31,13 +31,16 @@
                            <font>
                               <Font name="System Bold" size="16.0" />
                            </font>
+                           <HBox.margin>
+                              <Insets left="20.0" />
+                           </HBox.margin>
                         </Label>
                         <ImageView fx:id="logoutBtn" fitHeight="28.0" fitWidth="27.0" onMouseClicked="#onLogout" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@../../../../images/logout.png" />
                            </image>
                            <HBox.margin>
-                              <Insets left="40.0" />
+                              <Insets left="30.0" />
                            </HBox.margin>
                         </ImageView>
                      </children>

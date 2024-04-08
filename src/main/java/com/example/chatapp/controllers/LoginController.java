@@ -54,6 +54,7 @@ public class LoginController implements Initializable {
                 showAlertBox();
 
                 userProps.setUsername(username.getText());
+                userProps.setAvatarUrl(input.readUTF());
                 userProps.setDataInputStream(input);
                 userProps.setDataOutputStream(output);
 

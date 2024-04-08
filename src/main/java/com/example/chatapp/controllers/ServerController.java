@@ -59,7 +59,8 @@ public class ServerController {
                                 continue;
                             }
                             outputStream.writeUTF("Log in successful");
-//                        outputStream.writeUTF(foundUser.getAvatarUrl());
+                            String userAvatarUrl = foundUser.getAvatarUrl() == null ? "" : foundUser.getAvatarUrl();
+                            outputStream.writeUTF(userAvatarUrl);
                             outputStream.flush();
                             ClientHandler clientHandler = new ClientHandler(clientSocket, foundUser);
                             clients.add(clientHandler);
@@ -123,8 +124,11 @@ public class ServerController {
         StringBuilder message = new StringBuilder(" ");
         if (!clients.isEmpty()) {
             for (ClientHandler client : clients) {
-                message.append(",");
+                message.append("|");
                 message.append(client.getUsername());
+                message.append(",");
+                String userAvatar = client.getUserAvatarUrl();
+                message.append(userAvatar.isEmpty() ? "NoAvatar" : userAvatar);
             }
             if (!message.toString().equals(" ")) {
                 for (ClientHandler client : clients) {
