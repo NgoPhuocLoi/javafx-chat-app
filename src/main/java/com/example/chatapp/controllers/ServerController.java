@@ -5,6 +5,7 @@ import com.example.chatapp.models.User;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -34,7 +35,8 @@ public class ServerController {
                 if (request.equals("SIGN_UP")) {
                     String username = inputStream.readUTF();
                     String password = inputStream.readUTF();
-                    User user = new User(username, password, "");
+                    File defaultAvatar = new File("src/main/resources/images/icons8-avatar-48.png");
+                    User user = new User(username, password, defaultAvatar.toURI().toString());
                     System.out.println(username + ": " + password);
                     if (!isExistedUserWithUsername(username)) {
                         this.saveUser(user);

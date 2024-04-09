@@ -2,15 +2,19 @@ package com.example.chatapp.controllers;
 
 import com.example.chatapp.ChatApplication;
 import com.example.chatapp.utils.UserProps;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.TilePane;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.io.DataInputStream;
@@ -30,6 +34,8 @@ public class LoginController implements Initializable {
 
     UserProps userProps = UserProps.getInstance();
 
+    SimpleBooleanProperty isSigningUp = new SimpleBooleanProperty(false);
+
     @FXML
     private TextField username;
 
@@ -37,10 +43,23 @@ public class LoginController implements Initializable {
     private PasswordField password;
 
     @FXML
+    private PasswordField confirmPassword;
+
+    @FXML
     private AnchorPane loginFormContainer;
 
     @FXML
+    private Button signUpBtn;
+
+    @FXML
+    private Button loginBtn;
+
+    @FXML
+    private VBox confirmPasswordContainer;
+
+    @FXML
     public void onLoginButtonClick()  {
+//        System.out.println("LOGIN");
         try {
             connectToServer();
             output.writeUTF("SIGN_IN");
@@ -74,9 +93,64 @@ public class LoginController implements Initializable {
         }
     }
 
+    @FXML
+    public void onSignUpButtonClick(){
+
+        if(!password.getText().equals(confirmPassword.getText())){
+            showAlertBox("Error", "Password and confirm password do not match");
+            return;
+        }
+
+        try {
+            connectToServer();
+            output.writeUTF("SIGN_UP");
+            output.writeUTF(username.getText());
+            output.writeUTF(password.getText());
+            output.flush();
+            String response = input.readUTF();
+
+            if(response.equals("Sign up successful")){
+                showAlertBox("Success", "Sign up successful");
+                toggleSignUpAndSignInView();
+            }else{
+                showAlertBox("Error", response);
+            }
+        } catch (IOException e) {
+            System.out.println("Network error: " + e.getMessage());;
+        }
+    }
+    @FXML
+    public Text signUpAndSignInToggle;
+
+    @FXML
+    public Text signUpAndSignInText;
+
+    @FXML
+    public void toggleSignUpAndSignInView(){
+        if(isSigningUp.get()){
+            signUpAndSignInText.setText("New user?");
+            signUpAndSignInToggle.setText("Sign up now");
+            confirmPasswordContainer.setVisible(false);
+            loginBtn.setVisible(true);
+            signUpBtn.setVisible(false);
+        }else {
+            signUpAndSignInText.setText("Already has an account?");
+            signUpAndSignInToggle.setText("Sign In");
+            confirmPasswordContainer.setVisible(true);
+            loginBtn.setVisible(false);
+            signUpBtn.setVisible(true);
+        }
+        isSigningUp.set(!isSigningUp.get());
+    }
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-
+        isSigningUp.set(false);
+        confirmPasswordContainer.setVisible(false);
+        confirmPasswordContainer.managedProperty().bind(confirmPasswordContainer.visibleProperty());
+        loginBtn.managedProperty().bind(loginBtn.visibleProperty());
+        signUpBtn.managedProperty().bind(signUpBtn.visibleProperty());
+        signUpBtn.setVisible(false);
     }
 
     public void showAlertBox(String header, String content){
