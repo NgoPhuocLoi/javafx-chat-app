@@ -51,7 +51,7 @@ public class LoginController implements Initializable {
             String response = input.readUTF();
 
             if(response.equals("Log in successful")){
-                showAlertBox();
+                showAlertBox("Success", "Log in successful");
 
                 userProps.setUsername(username.getText());
                 userProps.setAvatarUrl(input.readUTF());
@@ -65,7 +65,10 @@ public class LoginController implements Initializable {
                 stage.setScene(dashboardScene);
                 stage.show();
             }
-            System.out.println("Response: " + response);
+            else {
+                showAlertBox("Error", response);
+            }
+
         }catch (Exception e) {
             System.out.println("ERROR when login " + e.getMessage());
         }
@@ -76,14 +79,14 @@ public class LoginController implements Initializable {
 
     }
 
-    public void showAlertBox(){
+    public void showAlertBox(String header, String content){
         TilePane r = new TilePane();
 
         // create a alert
         Alert a = new Alert(Alert.AlertType.INFORMATION);
 
-        a.setHeaderText("Hello");
-        a.setContentText("This is a information alert");
+        a.setHeaderText(header);
+        a.setContentText(content);
         a.showAndWait();
     }
 

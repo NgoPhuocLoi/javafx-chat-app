@@ -85,11 +85,16 @@ public class DashboardController implements Initializable {
             System.out.println(file.toURI().toString());
             try {
                 user.getOutputStream().writeUTF("CHANGE_AVATAR," + user.getUsername() + "," + file.toURI());
+                user.getOutputStream().flush();
+                if(userChattingWith.getValue() != null){
+                    user.getOutputStream().writeUTF("GET_MESSAGES," + user.getUsername() + "," + userChattingWith.getValue());
+                }
+
             } catch (IOException e) {
                 e.printStackTrace();
                 System.out.println("Error when changing avatar");
             }
-            Image image = new Image(file.toURI().toString(),50, 50, false, true);
+            Image image = new Image(file.toURI().toString(),40, 40, false, true);
             avatarImage.setImage(image);
         }
     }
@@ -194,7 +199,7 @@ public class DashboardController implements Initializable {
                             else {
                                 onlineUsersBox.getChildren().forEach(child -> {
                                     if(child.getId().equals(sender)){
-                                        child.setStyle("-fx-background-color: red; -fx-padding: 10px;");
+                                        child.getStyleClass().add("red-bg");
                                     }
                                 });
                             }
@@ -226,16 +231,27 @@ public class DashboardController implements Initializable {
                         System.out.println("Online users: " + Arrays.toString(users));
                         Platform.runLater(() -> {
                             onlineUsersBox.getChildren().clear();
+                            boolean isUserChatWithOnline = false;
                             for (String u : users) {
                                 String[] userParts = u.split(",");
                                 String username = userParts[0];
                                 String avatarUrl = userParts[1];
+                                if(userChattingWith.getValue() != null && userChattingWith.getValue().equals(username)){
+                                    isUserChatWithOnline = true;
+                                }
                                 if (!username.equals(user.getUsername())) {
                                     appendOnlineUser(username, avatarUrl.equals("NoAvatar") ? "" : avatarUrl, "");
                                 }
                             }
+                            if(!isUserChatWithOnline){
+                                userChattingWith.set(null);
+                                chatContainer.setVisible(false);
+                            }
                         });
-
+                        if(userChattingWith.getValue() != null){
+                            user.getOutputStream().writeUTF("GET_MESSAGES," + user.getUsername() + "," + userChattingWith.getValue());
+                            user.getOutputStream().flush();
+                        }
                     } else if (messageReceived[0].equals("GET_MESSAGES")) {
 
                         try {
@@ -278,8 +294,9 @@ public class DashboardController implements Initializable {
 
     private void appendOnlineUser(String username, String avatarUrl, String lastMessage){
         HBox onlineUserContainer = new HBox();
+
         onlineUserContainer.setAlignment(Pos.CENTER_LEFT);
-        onlineUserContainer.setPadding(new javafx.geometry.Insets(0, 0, 0, 10));
+        onlineUserContainer.setPadding(new javafx.geometry.Insets(4, 0, 4, 10));
         HBox.setMargin(onlineUserContainer, new javafx.geometry.Insets(10, 0, 0, 0));
         onlineUserContainer.setId(username);
         onlineUserContainer.setOnMouseClicked( e  -> {
@@ -293,6 +310,7 @@ public class DashboardController implements Initializable {
 
             onlineUsersBox.getChildren().forEach(child -> {
                 if(child.getId().equals(username)){
+                    child.getStyleClass().remove("red-bg");
                     child.getStyleClass().add("dark-gray-bg");
                 }else{
                     child.getStyleClass().remove("dark-gray-bg");
@@ -302,10 +320,12 @@ public class DashboardController implements Initializable {
 
         Image avatar = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/icons8-avatar-48.png")));
         if(!avatarUrl.isEmpty()){
-            avatar = new Image(avatarUrl, 50, 50, false, true);
+            avatar = new Image(avatarUrl, 40, 40, false, true);
         }
         ImageView userAvatar = new ImageView();
         userAvatar.setImage(avatar);
+
+        HBox.setMargin(userAvatar, new javafx.geometry.Insets(0, 10, 0, 0));
 
         Label usernameLabel = new Label();
         usernameLabel.setText(username);
@@ -320,6 +340,8 @@ public class DashboardController implements Initializable {
 
         VBox userInfoContainer = new VBox();
         userInfoContainer.setPadding(new javafx.geometry.Insets(4, 0, 0, 0));
+
+        VBox.setMargin(userInfoContainer, new javafx.geometry.Insets(0, 0, 0, 10));
         userInfoContainer.getChildren().addAll(usernameLabel, lastMessageLabel);
 
         onlineUserContainer.getChildren().setAll(userAvatar, userInfoContainer);
@@ -331,6 +353,8 @@ public class DashboardController implements Initializable {
 
     private void appendMessage(String message, boolean isSender, String userAvatarUrl){
         HBox messageContainer = new HBox();
+        messageContainer.setPadding(new javafx.geometry.Insets(5, 10, 5, 10));
+
         Pos alignment = isSender ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT;
         messageContainer.setAlignment(alignment);
 
@@ -341,14 +365,21 @@ public class DashboardController implements Initializable {
         ImageView userAvatar = new ImageView();
         userAvatar.setImage(image);
 
+        int avatarMarginLeftValue = isSender ? 10 : 0;
+        int avatarMarginRightValue = isSender ? 0 : 10;
+
+        HBox.setMargin(userAvatar, new javafx.geometry.Insets(0, avatarMarginRightValue, 0, avatarMarginLeftValue));
+
         Label messageLabel = new Label();
         messageLabel.setText(message);
-        messageLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #a19c9c;");
-        messageLabel.getStyleClass().add("incoming-bubble");
+        messageLabel.setStyle("-fx-font-size: 12px;");
+
 
         if(isSender){
+            messageLabel.getStyleClass().add("outgoing-bubble");
             messageContainer.getChildren().addAll(messageLabel, userAvatar);
         }else{
+            messageLabel.getStyleClass().add("incoming-bubble");
             messageContainer.getChildren().addAll(userAvatar, messageLabel);
         }
 

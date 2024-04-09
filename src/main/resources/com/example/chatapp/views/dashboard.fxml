@@ -138,7 +138,7 @@
             </HBox>
             <ScrollPane fx:id="chatScrollPane" hbarPolicy="NEVER" prefHeight="286.0" prefWidth="491.0" styleClass="light-gray-bg" stylesheets="@../../../../styles/style.css">
                <content>
-                  <VBox fx:id="messagesContainer" prefHeight="283.0" prefWidth="471.0">
+                  <VBox fx:id="messagesContainer" prefHeight="283.0" prefWidth="531.0">
                      <children>
                         <HBox alignment="CENTER_LEFT" prefHeight="42.0" prefWidth="200.0">
                            <children>
@@ -152,7 +152,17 @@
                         </HBox>
                         <HBox alignment="CENTER_RIGHT" prefHeight="42.0" prefWidth="200.0">
                            <children>
-                              <Label styleClass="incoming-bubble" stylesheets="@../../../../styles/style.css" text="Hohw are you today?" textFill="#a19c9c" />
+                              <Label styleClass="outgoing-bubble" stylesheets="@../../../../styles/style.css" text="Hohw are you today?" textFill="#a19c9c" />
+                              <ImageView fitHeight="150.0" fitWidth="50.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../../../images/icons8-avatar-48.png" />
+                                 </image>
+                              </ImageView>
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER_RIGHT" prefHeight="42.0" prefWidth="200.0">
+                           <children>
+                              <Label styleClass="outgoing-bubble" stylesheets="@../../../../styles/style.css" text="Hohw are you today?" textFill="#a19c9c" />
                               <ImageView fitHeight="150.0" fitWidth="50.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
                                     <Image url="@../../../../images/icons8-avatar-48.png" />
