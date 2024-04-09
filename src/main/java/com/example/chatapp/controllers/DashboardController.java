@@ -3,6 +3,7 @@ package com.example.chatapp.controllers;
 import com.example.chatapp.ChatApplication;
 import com.example.chatapp.daos.UserDAO;
 import com.example.chatapp.models.User;
+import com.example.chatapp.utils.UserData;
 import com.example.chatapp.utils.UserProps;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -35,7 +36,7 @@ public class DashboardController implements Initializable {
 
     Thread receiverThread;
 
-    User user = new User();
+    UserData user = new UserData();
 
     List<String> onlineUsers = new ArrayList<>();
 
@@ -83,7 +84,7 @@ public class DashboardController implements Initializable {
         if (file != null){
             System.out.println(file.toURI().toString());
             try {
-                userProps.getDataOutputStream().writeUTF("CHANGE_AVATAR," + user.getUsername() + "," + file.toURI());
+                user.getOutputStream().writeUTF("CHANGE_AVATAR," + user.getUsername() + "," + file.toURI());
             } catch (IOException e) {
                 e.printStackTrace();
                 System.out.println("Error when changing avatar");
@@ -102,8 +103,8 @@ public class DashboardController implements Initializable {
         appendMessage(message, true, user.getAvatarUrl());
         String messageToServer = String.join(",", new String[]{"SEND_TEXT", user.getUsername(), userChattingWith.getValue(), message, user.getAvatarUrl().isEmpty() ? "NoAvatar" : user.getAvatarUrl()});
         try {
-            userProps.getDataOutputStream().writeUTF(messageToServer);
-            userProps.getDataOutputStream().flush();
+            user.getOutputStream().writeUTF(messageToServer);
+            user.getOutputStream().flush();
         } catch (IOException e) {
             System.out.println("Error sending message to server");
         }
@@ -114,8 +115,8 @@ public class DashboardController implements Initializable {
     @FXML
     public void onLogout(){
         try{
-            userProps.getDataOutputStream().writeUTF("LOG_OUT");
-            userProps.getDataOutputStream().flush();
+            user.getOutputStream().writeUTF("LOG_OUT");
+            user.getOutputStream().flush();
             var stage = (Stage)dashboardContainer.getScene().getWindow();
             stage.close();
             Scene dashboardScene = new Scene(new FXMLLoader(ChatApplication.class.getResource("views/login.fxml")).load());
@@ -137,6 +138,8 @@ public class DashboardController implements Initializable {
         }
         user.setUsername(userProps.getUsername());
         user.setAvatarUrl(userProps.getAvatarUrl());
+        user.setInputStream(userProps.getDataInputStream());
+        user.setOutputStream(userProps.getDataOutputStream());
         if(userChattingWith.getValue() == null){
             chatContainer.setVisible(false);
         }
@@ -281,8 +284,8 @@ public class DashboardController implements Initializable {
         onlineUserContainer.setId(username);
         onlineUserContainer.setOnMouseClicked( e  -> {
             try {
-                userProps.getDataOutputStream().writeUTF("GET_MESSAGES," + user.getUsername() + "," + username);
-                userProps.getDataOutputStream().flush();
+                user.getOutputStream().writeUTF("GET_MESSAGES," + user.getUsername() + "," + username);
+                user.getOutputStream().flush();
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }

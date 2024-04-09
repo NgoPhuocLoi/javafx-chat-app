@@ -22,7 +22,7 @@
                <children>
                   <HBox alignment="CENTER_LEFT" prefHeight="54.0" prefWidth="181.0">
                      <children>
-                        <ImageView fx:id="avatarImage" fitHeight="150.0" fitWidth="50.0" onMouseClicked="#onChooseAvatar" pickOnBounds="true" preserveRatio="true" styleClass="avatar-image">
+                        <ImageView fx:id="avatarImage" fitHeight="50.0" fitWidth="50.0" onMouseClicked="#onChooseAvatar" pickOnBounds="true" preserveRatio="true" styleClass="avatar-image">
                            <image>
                               <Image url="@../../../../images/icons8-avatar-48.png" />
                            </image>
