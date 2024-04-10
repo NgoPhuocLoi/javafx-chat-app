@@ -279,6 +279,9 @@ public class DashboardController implements Initializable {
                                 });
                             }
                         } catch (Exception e) {
+                            Platform.runLater(() -> {
+                                messagesContainer.getChildren().clear();
+                            });
                             System.out.println("No messages found...");
                         }
                     }
