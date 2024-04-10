@@ -1,6 +1,5 @@
 package com.example.chatapp.models;
 
-import com.mysql.cj.xdevapi.JsonArray;
 
 public class Message {
     private String sender;
