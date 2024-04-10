@@ -59,7 +59,7 @@ public class LoginController implements Initializable {
     private VBox confirmPasswordContainer;
 
     @FXML
-    public void onLoginButtonClick()  {
+    public void onLoginButtonClick() {
 //        System.out.println("LOGIN");
         try {
             connectToServer();
@@ -70,7 +70,7 @@ public class LoginController implements Initializable {
 
             String response = input.readUTF();
 
-            if(response.equals("Log in successful")){
+            if (response.equals("Log in successful")) {
                 showAlertBox("Success", "Log in successful");
 
                 userProps.setUsername(username.getText());
@@ -78,7 +78,7 @@ public class LoginController implements Initializable {
                 userProps.setDataInputStream(input);
                 userProps.setDataOutputStream(output);
 
-                var stage = (Stage)loginFormContainer.getScene().getWindow();
+                var stage = (Stage) loginFormContainer.getScene().getWindow();
                 stage.close();
                 Scene dashboardScene = new Scene(new FXMLLoader(ChatApplication.class.getResource("views/dashboard.fxml")).load());
 
@@ -93,32 +93,39 @@ public class LoginController implements Initializable {
                     }
                 });
 
-            }
-            else {
+            } else {
                 showAlertBox("Error", response);
             }
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.out.println("ERROR when login " + e.getMessage());
         }
     }
 
     @FXML
-    public void onLoginEnter(KeyEvent event){
-        if(event.getCode().toString().equals("ENTER")){
+    public void onLoginEnter(KeyEvent event) {
+        if (event.getCode().toString().equals("ENTER")) {
             onLoginButtonClick();
         }
     }
 
     @FXML
-    public void onSignUpButtonClick(){
+    public void onSignUpButtonClick() {
 
-        if(!password.getText().equals(confirmPassword.getText())){
+
+        if (username.getText().isBlank()) {
+            showAlertBox("Error", "Username must not be empty");
+            return;
+        } else if (password.getText().trim().length() < 6) {
+            showAlertBox("Error", "Password must be at least 6 characters long");
+            return;
+        } else if (!password.getText().equals(confirmPassword.getText())) {
             showAlertBox("Error", "Password and confirm password do not match");
             return;
         }
 
         try {
+
             connectToServer();
             output.writeUTF("SIGN_UP");
             output.writeUTF(username.getText());
@@ -126,16 +133,18 @@ public class LoginController implements Initializable {
             output.flush();
             String response = input.readUTF();
 
-            if(response.equals("Sign up successful")){
+            if (response.equals("Sign up successful")) {
                 showAlertBox("Success", "Sign up successful");
                 toggleSignUpAndSignInView();
-            }else{
+            } else {
                 showAlertBox("Error", response);
             }
         } catch (IOException e) {
-            System.out.println("Network error: " + e.getMessage());;
+            System.out.println("Network error: " + e.getMessage());
+            ;
         }
     }
+
     @FXML
     public Text signUpAndSignInToggle;
 
@@ -143,14 +152,14 @@ public class LoginController implements Initializable {
     public Text signUpAndSignInText;
 
     @FXML
-    public void toggleSignUpAndSignInView(){
-        if(isSigningUp.get()){
+    public void toggleSignUpAndSignInView() {
+        if (isSigningUp.get()) {
             signUpAndSignInText.setText("New user?");
             signUpAndSignInToggle.setText("Sign up now");
             confirmPasswordContainer.setVisible(false);
             loginBtn.setVisible(true);
             signUpBtn.setVisible(false);
-        }else {
+        } else {
             signUpAndSignInText.setText("Already has an account?");
             signUpAndSignInToggle.setText("Sign In");
             confirmPasswordContainer.setVisible(true);
@@ -170,7 +179,7 @@ public class LoginController implements Initializable {
         signUpBtn.setVisible(false);
     }
 
-    public void showAlertBox(String header, String content){
+    public void showAlertBox(String header, String content) {
         TilePane r = new TilePane();
 
         // create a alert
