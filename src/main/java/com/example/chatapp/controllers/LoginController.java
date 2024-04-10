@@ -11,6 +11,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
@@ -83,6 +84,15 @@ public class LoginController implements Initializable {
 
                 stage.setScene(dashboardScene);
                 stage.show();
+                stage.setOnCloseRequest(e -> {
+                    try {
+                        output.writeUTF("LOG_OUT");
+                        output.flush();
+                    } catch (IOException ioException) {
+                        ioException.printStackTrace();
+                    }
+                });
+
             }
             else {
                 showAlertBox("Error", response);
@@ -90,6 +100,13 @@ public class LoginController implements Initializable {
 
         }catch (Exception e) {
             System.out.println("ERROR when login " + e.getMessage());
+        }
+    }
+
+    @FXML
+    public void onLoginEnter(KeyEvent event){
+        if(event.getCode().toString().equals("ENTER")){
+            onLoginButtonClick();
         }
     }
 
