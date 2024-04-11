@@ -6,6 +6,8 @@ public class Message {
     private String receiver;
     private String content;
 
+    private int groupId;
+
     public Message(String sender, String receiver, String content) {
         this.sender = sender;
         this.receiver = receiver;
@@ -35,5 +37,13 @@ public class Message {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public int getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(int groupId) {
+        this.groupId = groupId;
     }
 }

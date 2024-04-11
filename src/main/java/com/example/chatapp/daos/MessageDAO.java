@@ -14,7 +14,7 @@ import java.util.List;
 
 public class MessageDAO {
     public static boolean save(Message newMessage) throws Exception{
-        String sql = "insert into messages (sender, receiver, content) values(?,?,?)";
+        String sql = "insert into messages (sender, receiver, content, group_id) values(?,?,?, ?)";
         try (
                 Connection con = MySQLDB.getConnection();
                 PreparedStatement psmt = con.prepareStatement(sql);)
@@ -22,6 +22,7 @@ public class MessageDAO {
             psmt.setString(1, newMessage.getSender());
             psmt.setString(2, newMessage.getReceiver());
             psmt.setString(3, newMessage.getContent());
+            psmt.setInt(4, newMessage.getGroupId());
 
             if (psmt.executeUpdate() > 0) {
                 return true;
@@ -44,9 +45,28 @@ public class MessageDAO {
 
             ResultSet rs = psmt.executeQuery();
             while(rs.next()){
-
-
                 Message message = new Message(rs.getString(2), rs.getString(3), rs.getString(4));
+                messages.add(message);
+
+            }
+        }
+
+        return messages;
+    }
+
+    public static List<Message> getMessagesInGroup(int groupId) throws Exception{
+        String sql = "select * from messages where group_id = ? ORDER BY id";
+        List<Message> messages = new ArrayList<>();
+        try (
+                Connection con = MySQLDB.getConnection();
+                PreparedStatement psmt = con.prepareStatement(sql);)
+        {
+            psmt.setInt(1, groupId);
+
+            ResultSet rs = psmt.executeQuery();
+            while(rs.next()){
+                Message message = new Message(rs.getString(2), rs.getString(3), rs.getString(4));
+                message.setGroupId(rs.getInt(5));
                 messages.add(message);
 
             }

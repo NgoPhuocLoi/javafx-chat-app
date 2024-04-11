@@ -2,11 +2,15 @@ package com.example.chatapp.controllers;
 
 import com.example.chatapp.ChatApplication;
 import com.example.chatapp.daos.UserDAO;
+import com.example.chatapp.models.GroupChat;
 import com.example.chatapp.models.User;
 import com.example.chatapp.utils.UserData;
 import com.example.chatapp.utils.UserProps;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleMapProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.ObservableMap;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -19,10 +23,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -42,7 +43,11 @@ public class DashboardController implements Initializable {
 
     List<String> onlineUsers = new ArrayList<>();
 
+    List<GroupChat> groups = new ArrayList<>();
+
     SimpleStringProperty userChattingWith = new SimpleStringProperty();
+
+    SimpleIntegerProperty groupIdChattingWith = new SimpleIntegerProperty();
 
     @FXML
     private BorderPane dashboardContainer;
@@ -52,6 +57,9 @@ public class DashboardController implements Initializable {
 
     @FXML
     VBox onlineUsersBox;
+
+    @FXML
+    VBox groupsBox;
 
     @FXML
     Label currentLoggedInUsername;
@@ -106,17 +114,34 @@ public class DashboardController implements Initializable {
 
         String message = chatInput.getText();
         System.out.println("Sending message: " + message);
-
         appendMessage(message, true, user.getAvatarUrl());
-        String messageToServer = String.join(",", new String[]{"SEND_TEXT", user.getUsername(), userChattingWith.getValue(), message, user.getAvatarUrl().isEmpty() ? "NoAvatar" : user.getAvatarUrl()});
+        if(userChattingWith.getValue() != null) {
+            sendTextMessageToUser(message, userChattingWith.getValue());
+        } else if(groupIdChattingWith.getValue() != -1) {
+            sendTextMessageToGroup(message, groupIdChattingWith.getValue());
+        }
+        chatInput.clear();
+    }
+
+    private void sendTextMessageToUser(String message, String receiver) {
+        String messageToServer = String.join(",", new String[]{"SEND_TEXT", user.getUsername(), receiver, message, user.getAvatarUrl().isEmpty() ? "NoAvatar" : user.getAvatarUrl()});
         try {
             user.getOutputStream().writeUTF(messageToServer);
             user.getOutputStream().flush();
         } catch (IOException e) {
             System.out.println("Error sending message to server");
         }
-        System.out.println(messagesContainer.getHeight());
-        chatInput.clear();
+
+    }
+
+    private void sendTextMessageToGroup(String message, int groupId) {
+        String messageToServer = String.join(",", new String[]{"SEND_GROUP_TEXT", user.getUsername(), groupId + "", message, user.getAvatarUrl().isEmpty() ? "NoAvatar" : user.getAvatarUrl()});
+        try {
+            user.getOutputStream().writeUTF(messageToServer);
+            user.getOutputStream().flush();
+        } catch (IOException e) {
+            System.out.println("Error sending message to server");
+        }
     }
 
     @FXML
@@ -162,9 +187,36 @@ public class DashboardController implements Initializable {
         userChattingWith.addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 chatContainer.setVisible(true);
+                groupIdChattingWith.set(-1);
                 testLabel.setText(newValue);
             }
+            onlineUsersBox.getChildren().forEach(child -> {
+                if (child.getId().equals(newValue)) {
+                    child.getStyleClass().remove("red-bg");
+                    child.getStyleClass().add("dark-gray-bg");
+                } else {
+                    child.getStyleClass().remove("dark-gray-bg");
+                }
+            });
             System.out.println("User chatting with: " + newValue);
+        });
+
+        groupIdChattingWith.addListener((observable, oldValue, newValue) -> {
+            if (newValue.intValue() != -1) {
+                chatContainer.setVisible(true);
+                userChattingWith.set(null);
+                GroupChat g = groups.stream().filter(group -> group.getId() == newValue.intValue()).findFirst().get();
+                testLabel.setText(g.getName());
+            }
+            groupsBox.getChildren().forEach(child -> {
+                if (child.getId().equals(newValue + "")) {
+                    child.getStyleClass().remove("red-bg");
+                    child.getStyleClass().add("dark-gray-bg");
+                } else {
+                    child.getStyleClass().remove("dark-gray-bg");
+                }
+            });
+            System.out.println("Group chatting with: " + newValue);
         });
 
         messagesContainer.heightProperty().addListener((observable, oldValue, newValue) -> {
@@ -191,37 +243,61 @@ public class DashboardController implements Initializable {
                     // Chờ thông điệp từ server
                     String[] messageReceived = input.readUTF().split(",");
 
-                    if (messageReceived[0].equals("SEND_TEXT")) {
-                        // Nhận một tin nhắn văn bản
-                        String sender = messageReceived[1];
-                        String receiver = messageReceived[2];
-                        String message = messageReceived[3];
-                        String senderAvatar = messageReceived[4].equals("NoAvatar") ? "" : messageReceived[4];
-                        // In tin nhắn lên màn hình chat với người gửi
+                    switch (messageReceived[0]) {
+                        case "SEND_TEXT": {
+                            // Nhận một tin nhắn văn bản
+                            String sender = messageReceived[1];
+                            String receiver = messageReceived[2];
+                            String message = messageReceived[3];
+                            String senderAvatar = messageReceived[4].equals("NoAvatar") ? "" : messageReceived[4];
+                            // In tin nhắn lên màn hình chat với người gửi
 //                    newMessage(sender, receiver, message, false);
 //                    autoScroll();
-                        if (Objects.equals(receiver, user.getUsername())) {
-                            if (Objects.equals(sender, userChattingWith.getValue())) {
-                                Platform.runLater(() -> {
-                                    appendMessage(message, false, senderAvatar);
-                                });
-                            } else {
-                                onlineUsersBox.getChildren().forEach(child -> {
-                                    if (child.getId().equals(sender)) {
-                                        child.getStyleClass().add("red-bg");
-                                    }
-                                });
+                            if (Objects.equals(receiver, user.getUsername())) {
+                                if (Objects.equals(sender, userChattingWith.getValue())) {
+                                    Platform.runLater(() -> {
+                                        appendMessage(message, false, senderAvatar);
+                                    });
+                                } else {
+                                    onlineUsersBox.getChildren().forEach(child -> {
+                                        if (child.getId().equals(sender)) {
+                                            child.getStyleClass().add("red-bg");
+                                        }
+                                    });
+                                }
                             }
 
 
+                            break;
                         }
+                        case "SEND_GROUP_TEXT": {
+                            // Nhận một tin nhắn văn bản
+                            String sender = messageReceived[1];
+                            int groupId = Integer.parseInt(messageReceived[2]);
+
+                            String message = messageReceived[3];
+                            String senderAvatar = messageReceived[4].equals("NoAvatar") ? "" : messageReceived[4];
 
 
-                    } else if (messageReceived[0].equals("File")) {
-                        // Nhận một file
-                        String sender = messageReceived[1];
-                        String receiver = messageReceived[2];
-                        String filename = messageReceived[3];
+                                if (groupId == groupIdChattingWith.getValue()) {
+                                    Platform.runLater(() -> {
+                                        appendMessage(message, false, senderAvatar);
+                                    });
+                                } else {
+                                    onlineUsersBox.getChildren().forEach(child -> {
+                                        if (child.getId().equals(groupId + "")) {
+                                            child.getStyleClass().add("red-bg");
+                                        }
+                                    });
+                                }
+
+                            // In tin nhắn lên màn hình chat với người gửi
+                        }
+                        case "File": {
+                            // Nhận một file
+                            String sender = messageReceived[1];
+                            String receiver = messageReceived[2];
+                            String filename = messageReceived[3];
 //                    int size = Integer.parseInt(messageReceived[4]);
 //                    int bufferSize = 2048;
 //                    byte[] buffer = new byte[bufferSize];
@@ -233,57 +309,88 @@ public class DashboardController implements Initializable {
 //                        size -= bufferSize;
 //                    }
 
-                    } else if (messageReceived[0].equals("Online users")) {
-                        // Nhận yêu cầu cập nhật danh sách người dùng trực tuyến
-                        String[] users = input.readUTF().split("\\|");
-
-                        System.out.println("Online users: " + Arrays.toString(users));
-                        Platform.runLater(() -> {
-                            onlineUsersBox.getChildren().clear();
-                            boolean isUserChatWithOnline = false;
-                            for (String u : users) {
-                                String[] userParts = u.split(",");
-                                String username = userParts[0];
-                                String avatarUrl = userParts[1];
-                                if (userChattingWith.getValue() != null && userChattingWith.getValue().equals(username)) {
-                                    isUserChatWithOnline = true;
-                                }
-                                if (!username.equals(user.getUsername())) {
-                                    appendOnlineUser(username, avatarUrl.equals("NoAvatar") ? "" : avatarUrl, "");
-                                }
-                            }
-                            if (!isUserChatWithOnline) {
-                                userChattingWith.set(null);
-                                chatContainer.setVisible(false);
-                            }
-                        });
-                        if (userChattingWith.getValue() != null) {
-                            user.getOutputStream().writeUTF("GET_MESSAGES," + user.getUsername() + "," + userChattingWith.getValue());
-                            user.getOutputStream().flush();
+                            break;
                         }
-                    } else if (messageReceived[0].equals("GET_MESSAGES")) {
+                        case "Online users": {
+                            String[] users = input.readUTF().split("\\|");
 
-                        try {
-                            String prepareMessage = messageReceived[1];
-                            String[] messages = prepareMessage.split("\\|\\|");
+                            System.out.println("Online users: " + Arrays.toString(users));
                             Platform.runLater(() -> {
-                                messagesContainer.getChildren().clear();
+                                onlineUsersBox.getChildren().clear();
+                                boolean isUserChatWithOnline = false;
+                                for (String u : users) {
+                                    String[] userParts = u.split(",");
+                                    String username = userParts[0];
+                                    String avatarUrl = userParts[1];
+                                    if (userChattingWith.getValue() != null && userChattingWith.getValue().equals(username)) {
+                                        isUserChatWithOnline = true;
+                                    }
+                                    if (!username.equals(user.getUsername())) {
+                                        appendOnlineUser(username, avatarUrl.equals("NoAvatar") ? "" : avatarUrl, "");
+                                    }
+                                }
+                                if (!isUserChatWithOnline && groupIdChattingWith.getValue() == -1){
+                                    userChattingWith.set(null);
+                                    chatContainer.setVisible(false);
+                                }
                             });
-                            for (String message : messages) {
-                                String[] messageParts = message.split("\\|");
-                                String content = messageParts[0];
-                                boolean isSender = Boolean.parseBoolean(messageParts[1]);
-                                String userAvatar = messageParts[2].equals("NoAvatar") ? "" : messageParts[2];
+                            if (userChattingWith.getValue() != null) {
+                                user.getOutputStream().writeUTF("GET_MESSAGES," + user.getUsername() + "," + userChattingWith.getValue());
+                                user.getOutputStream().flush();
+                            }
+                            break;
+                        }
+                        case "GET_MESSAGES":
+                        case "GET_GROUP_MESSAGES": {
+                            try {
+                                String prepareMessage = messageReceived[1];
+                                String[] messages = prepareMessage.split("\\|\\|");
                                 Platform.runLater(() -> {
-                                    appendMessage(content, isSender, userAvatar);
+                                    messagesContainer.getChildren().clear();
                                 });
+                                for (String message : messages) {
+                                    String[] messageParts = message.split("\\|");
+                                    String content = messageParts[0];
+                                    String senderUsername = messageParts[1];
+                                    String userAvatar = messageParts[2].equals("NoAvatar") ? "" : messageParts[2];
+                                    Platform.runLater(() -> {
+                                        appendMessage(content, senderUsername.equals(user.getUsername()), userAvatar);
+                                    });
+                                }
+                            } catch (Exception e) {
+                                Platform.runLater(() -> {
+                                    messagesContainer.getChildren().clear();
+                                });
+                                System.out.println("No messages found...");
                             }
-                        } catch (Exception e) {
-                            Platform.runLater(() -> {
-                                messagesContainer.getChildren().clear();
-                            });
-                            System.out.println("No messages found...");
+                            break;
                         }
+                        case "GET_GROUPS": {
+                            String[] groups = input.readUTF().split("\\|");
+
+                            System.out.println("Groups of users: " + Arrays.toString(groups));
+                            Platform.runLater(() -> {
+                                groupsBox.getChildren().clear();
+//                                boolean isUserChatWithOnline = false;
+                                for (String group : groups) {
+                                    String[] groupPart = group.split(",");
+                                    String groupId = groupPart[0];
+                                    String groupName = groupPart[1];
+//                                    if (userChattingWith.getValue() != null && userChattingWith.getValue().equals(username)) {
+//                                        isUserChatWithOnline = true;
+//                                    }
+
+                                    appendGroupOfUser(user.getUsername(), Integer.parseInt(groupId), groupName);
+
+                                }
+//                                if (!isUserChatWithOnline) {
+//                                    userChattingWith.set(null);
+//                                    chatContainer.setVisible(false);
+//                                }
+                            });
+                        }
+
+
                     }
 
                 }
@@ -320,14 +427,7 @@ public class DashboardController implements Initializable {
             }
             userChattingWith.set(username);
 
-            onlineUsersBox.getChildren().forEach(child -> {
-                if (child.getId().equals(username)) {
-                    child.getStyleClass().remove("red-bg");
-                    child.getStyleClass().add("dark-gray-bg");
-                } else {
-                    child.getStyleClass().remove("dark-gray-bg");
-                }
-            });
+
         });
 
         Image avatar = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/icons8-avatar-48.png")));
@@ -363,6 +463,55 @@ public class DashboardController implements Initializable {
         onlineUsersBox.getChildren().add(onlineUserContainer);
     }
 
+    private void appendGroupOfUser(String username, int groupId, String groupName) {
+        groups.add(new GroupChat(groupId, groupName));
+        HBox groupContainer = new HBox();
+
+        groupContainer.setAlignment(Pos.CENTER_LEFT);
+        groupContainer.setPadding(new javafx.geometry.Insets(4, 0, 4, 10));
+        HBox.setMargin(groupContainer, new javafx.geometry.Insets(10, 0, 0, 0));
+        groupContainer.setId(groupId + "");
+        groupContainer.setOnMouseClicked(e -> {
+            try {
+                user.getOutputStream().writeUTF("GET_GROUP_MESSAGES," + groupId);
+                user.getOutputStream().flush();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+
+
+            groupIdChattingWith.set(groupId);
+
+
+        });
+
+
+        Image groupAvatarImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/group.png")), 40, 40, false, true);
+
+        ImageView groupAvatar = new ImageView();
+        groupAvatar.setImage(groupAvatarImage);
+
+        HBox.setMargin(groupAvatar, new javafx.geometry.Insets(0, 10, 0, 0));
+
+        Label groupNameLabel = new Label();
+        groupNameLabel.setText(groupName);
+        groupNameLabel.setFont(new javafx.scene.text.Font(16));
+        groupNameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: white;");
+
+
+
+
+
+
+        VBox.setMargin(groupNameLabel, new javafx.geometry.Insets(0, 0, 0, 10));
+
+
+        groupContainer.getChildren().setAll(groupAvatar, groupNameLabel);
+//        if (userChattingWith.getValue() != null && userChattingWith.getValue().equals(username)) {
+//            onlineUserContainer.getStyleClass().add("dark-gray-bg");
+//        }
+        groupsBox.getChildren().add(groupContainer);
+    }
     private void appendMessage(String message, boolean isSender, String userAvatarUrl) {
         HBox messageContainer = new HBox();
         messageContainer.setPadding(new javafx.geometry.Insets(5, 10, 5, 10));

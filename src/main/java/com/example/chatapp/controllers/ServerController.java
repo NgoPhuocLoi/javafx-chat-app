@@ -1,6 +1,8 @@
 package com.example.chatapp.controllers;
 
+import com.example.chatapp.daos.GroupChatDAO;
 import com.example.chatapp.daos.UserDAO;
+import com.example.chatapp.models.GroupChat;
 import com.example.chatapp.models.User;
 
 import java.io.DataInputStream;
@@ -72,6 +74,7 @@ public class ServerController {
                             thread.start();
 
                             updateOnlineUsers();
+                            updateGroupsOfUser(username);
                         } else {
                             outputStream.writeUTF("Wrong password");
                             outputStream.flush();
@@ -150,6 +153,29 @@ public class ServerController {
             }
         }
 
+    }
+
+    public static void updateGroupsOfUser(String username){
+        var result = GroupChatDAO.getGroupsByUsername(username);
+        System.out.println("Groups of user: " + result.stream().map(GroupChat::getName).collect(Collectors.joining(", ")));
+        StringBuilder prepareMessage = new StringBuilder(" ");
+        for (var group : result) {
+            prepareMessage.append("|").append(group.getId()).append(",").append(group.getName());
+        }
+        for (ClientHandler client : ServerController.clients) {
+            if (client.getUsername().equals(username)) {
+                try {
+                    System.out.println("GET_GROUPS: " + prepareMessage.substring(2));
+                    client.getOutputStream().writeUTF("GET_GROUPS");
+                    client.getOutputStream().writeUTF(prepareMessage.substring(2));
+                    client.getOutputStream().flush();
+                } catch (IOException e) {
+                    System.out.println("Error when getting groups");
+                    throw new RuntimeException(e);
+                }
+                break;
+            }
+        }
     }
 
     public static void logoutClient(ClientHandler clientHandler) {

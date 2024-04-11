@@ -1,5 +1,6 @@
 package com.example.chatapp.controllers;
 
+import com.example.chatapp.daos.GroupChatDAO;
 import com.example.chatapp.daos.MessageDAO;
 import com.example.chatapp.daos.UserDAO;
 import com.example.chatapp.models.Message;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -75,6 +77,31 @@ public class ClientHandler implements Runnable {
                         }
                         break;
                     }
+                    case "SEND_GROUP_TEXT": {
+                        String senderUsername = messages[1];
+                        int groupId = Integer.parseInt(messages[2]);
+                        System.out.println("Group id: " + groupId);
+                        String messageContent = messages[3];
+                        String senderAvatar = messages[4];
+                        List<String> members = GroupChatDAO.getMembersInGroup(groupId);
+                        Message newMessage = new Message(senderUsername, null, messageContent);
+                        newMessage.setGroupId(groupId);
+                        MessageDAO.save(newMessage);
+                        for (ClientHandler client : ServerController.clients) {
+                            if (members.contains(client.getUsername()) && !client.getUsername().equals(senderUsername)) {
+
+                                System.out.println("Message saved");
+                                DataOutputStream receiverOutput = client.getOutputStream();
+                                String sendMessage = String.join(",", new String[]{"SEND_GROUP_TEXT", senderUsername, String.valueOf(groupId), messageContent, senderAvatar});
+                                System.out.println("sendMessage: "+ sendMessage);
+                                receiverOutput.writeUTF(sendMessage);
+                                receiverOutput.flush();
+
+
+                            }
+                        }
+                        break;
+                    }
                     case "SEND_FILE": {
 //                        String receiver = messages[1];
 //                        String fileName = messages[2];
@@ -121,7 +148,7 @@ public class ClientHandler implements Runnable {
                         var result = MessageDAO.getMessages(senderUsername, receiverUsername);
                         StringBuilder prepareMessage = new StringBuilder();
                         for (Message message : result) {
-                            prepareMessage.append(message.getContent()).append("|").append(message.getSender().equals(senderUsername)).append("|").append(userAvatar.get(message.getSender())).append("||");
+                            prepareMessage.append(message.getContent()).append("|").append(message.getSender()).append("|").append(userAvatar.get(message.getSender())).append("||");
                         }
 
                         for (ClientHandler client : ServerController.clients) {
@@ -148,6 +175,33 @@ public class ClientHandler implements Runnable {
                             }
                         }
                         ServerController.updateOnlineUsers();
+                        break;
+                    }
+                    case "GET_GROUP_MESSAGES": {
+                        int groupId = Integer.parseInt(messages[1]);
+                        var result = MessageDAO.getMessagesInGroup(groupId);
+                        UserDAO userDAO = new UserDAO();
+                        List<String> members = GroupChatDAO.getMembersInGroup(groupId);
+                        Map<String, String> membersAvatar = members.stream().collect(Collectors.toMap(member -> member, member -> {
+                            try {
+                                return userDAO.findUserByUsername(member).getAvatarUrl();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                return "NoAvatar";
+                            }
+                        }));
+                        StringBuilder prepareMessage = new StringBuilder();
+                        for (Message message : result) {
+                            prepareMessage.append(message.getContent()).append("|").append(message.getSender()).append("|").append(membersAvatar.get(message.getSender())).append("||");
+                        }
+                        System.out.println("Prepare message: " + prepareMessage.toString());
+                        for (ClientHandler client : ServerController.clients) {
+                            if (client.getUsername().equals(user.getUsername())) {
+                                client.getOutputStream().writeUTF("GET_GROUP_MESSAGES," + prepareMessage.toString());
+                                client.getOutputStream().flush();
+                                break;
+                            }
+                        }
                         break;
                     }
                     default: {

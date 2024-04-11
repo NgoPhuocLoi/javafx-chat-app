@@ -5,6 +5,8 @@
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -15,7 +17,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane fx:id="dashboardContainer" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="791.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.chatapp.controllers.DashboardController">
+<BorderPane fx:id="dashboardContainer" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="791.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.chatapp.controllers.DashboardController">
    <left>
       <HBox prefHeight="400.0" prefWidth="253.0" BorderPane.alignment="CENTER">
          <children>
@@ -78,15 +80,20 @@
                         <Insets left="5.0" right="5.0" top="10.0" />
                      </VBox.margin>
                   </HBox>
-                  <Label text="Online users" textFill="WHITE">
-                     <font>
-                        <Font name="System Bold" size="18.0" />
-                     </font>
-                     <VBox.margin>
-                        <Insets left="10.0" top="10.0" />
-                     </VBox.margin>
-                  </Label>
-                  <VBox fx:id="onlineUsersBox" prefHeight="257.0" prefWidth="240.0" />
+                  <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE">
+                    <tabs>
+                      <Tab text="Online Users">
+                           <content>
+                              <VBox fx:id="onlineUsersBox" prefHeight="200.0" prefWidth="100.0" />
+                           </content>
+                      </Tab>
+                      <Tab text="Group chat">
+                           <content>
+                              <VBox fx:id="groupsBox" prefHeight="200.0" prefWidth="100.0" />
+                           </content>
+                      </Tab>
+                    </tabs>
+                  </TabPane>
                </children>
                <HBox.margin>
                   <Insets />
