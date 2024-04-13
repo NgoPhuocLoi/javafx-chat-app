@@ -7,6 +7,7 @@ module com.example.chatapp {
 
 
     opens com.example.chatapp to javafx.fxml;
+    opens com.example.chatapp.models to javafx.base;
     exports com.example.chatapp;
     exports com.example.chatapp.controllers;
     opens com.example.chatapp.controllers to javafx.fxml;

@@ -7,9 +7,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UserDAO {
-    public boolean saveUser(User user) throws Exception {
+    public boolean saveUser(User user) {
         String sql = "insert into users values(?,?,?)";
         try (
                 Connection con = MySQLDB.getConnection();
@@ -21,11 +23,13 @@ public class UserDAO {
             if (psmt.executeUpdate() > 0) {
                 return true;
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
         return false;
     }
 
-    public User findUserByUsername(String username) throws Exception{
+    public User findUserByUsername(String username) {
         String sql = "select * from users where username=?";
         try (
             Connection con = MySQLDB.getConnection();
@@ -37,6 +41,8 @@ public class UserDAO {
             if (rs.next()) {
                 return new User(rs.getString(1), rs.getString(2), rs.getString(3));
             }
+        }catch (Exception e) {
+            throw new RuntimeException(e);
         }
         return null;
     }
@@ -54,5 +60,24 @@ public class UserDAO {
             }
         }
         return false;
+    }
+
+    //get all user
+    public List<User> getAll() {
+        String sql = "select * from users ";
+        List<User> users = new ArrayList<>();
+        try (
+            Connection con = MySQLDB.getConnection();
+            PreparedStatement psmt = con.prepareStatement(sql))
+        {
+            ResultSet rs = psmt.executeQuery();
+            while (rs.next()) {
+                users.add(new User(rs.getString("username"), rs.getString("password"),
+                        rs.getString("avatar")));
+            }
+        } catch (Exception e) {
+           throw new RuntimeException(e);
+        }
+        return users;
     }
 }

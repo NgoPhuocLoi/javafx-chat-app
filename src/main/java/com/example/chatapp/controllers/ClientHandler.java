@@ -194,10 +194,10 @@ public class ClientHandler implements Runnable {
                         for (Message message : result) {
                             prepareMessage.append(message.getContent()).append("|").append(message.getSender()).append("|").append(membersAvatar.get(message.getSender())).append("||");
                         }
-                        System.out.println("Prepare message: " + prepareMessage.toString());
+                        System.out.println("Prepare message: " + prepareMessage);
                         for (ClientHandler client : ServerController.clients) {
                             if (client.getUsername().equals(user.getUsername())) {
-                                client.getOutputStream().writeUTF("GET_GROUP_MESSAGES," + prepareMessage.toString());
+                                client.getOutputStream().writeUTF("GET_GROUP_MESSAGES," + prepareMessage);
                                 client.getOutputStream().flush();
                                 break;
                             }

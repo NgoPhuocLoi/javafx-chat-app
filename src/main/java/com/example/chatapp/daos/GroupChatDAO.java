@@ -2,12 +2,11 @@ package com.example.chatapp.daos;
 
 import com.example.chatapp.dbs.MySQLDB;
 import com.example.chatapp.models.GroupChat;
-import com.example.chatapp.models.Message;
+import com.example.chatapp.models.User;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,20 +26,38 @@ public class GroupChatDAO {
         return false;
     }
 
-    public static boolean addMember(String username, int groupId){
+    public static boolean addMembers(List<User> users, int groupId){
         String sql = "insert into groupmembers (username, group_id) values(?, ?)";
         try (
                 Connection con = MySQLDB.getConnection();
                 PreparedStatement psmt = con.prepareStatement(sql);) {
-            psmt.setString(1, username);
-            psmt.setInt(2, groupId);
-            if (psmt.executeUpdate() > 0) {
-                return true;
+            for (User user : users) {
+                psmt.setString(1, user.getUsername());
+                psmt.setInt(2, groupId);
+                psmt.executeUpdate();
             }
+
         }catch (Exception e) {
             throw new RuntimeException(e);
         }
         return false;
+    }
+
+    public static int getNewGroupId(){
+        String sql = "SELECT MAX(group_id) FROM chatgroups";
+        try (
+                Connection con = MySQLDB.getConnection();
+                PreparedStatement psmt = con.prepareStatement(sql);) {
+
+            ResultSet rs = psmt.executeQuery();
+            if(rs.next()){
+                return rs.getInt(1);
+            }
+
+        }catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return 0;
     }
 
     public static List<GroupChat> getGroupsByUsername(String username) {

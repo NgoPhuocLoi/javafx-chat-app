@@ -25,7 +25,9 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -546,5 +548,30 @@ public class DashboardController implements Initializable {
 
 
         this.messagesContainer.getChildren().add(messageContainer);
+    }
+
+    @FXML
+    public void showAddGroupForm(){
+        try{
+            FXMLLoader loader = new FXMLLoader(ChatApplication.class.getResource("views/addGroup.fxml"));
+            Scene scene = new Scene(loader.load());
+            AddGroupController controller = loader.getController();
+            controller.loadInitialData(user.getUsername());
+            Stage stage = new Stage();
+            stage.setOnCloseRequest(e -> {
+                try {
+                    user.getOutputStream().writeUTF("GET_GROUPS");
+                    user.getOutputStream().flush();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            });
+            stage.initStyle(StageStyle.UTILITY);
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setScene(scene);
+            stage.showAndWait();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -8,7 +8,7 @@ public class MySQLDB {
         Class.forName("com.mysql.cj.jdbc.Driver");
         String connectionUrl = "jdbc:mysql://localhost/chatapp";
         String username = "root";
-        String password = "<<ROOT_PASSWORD_HERE>>";
+        String password = "123456";
         return DriverManager.getConnection(connectionUrl, username, password);
     }
 }

@@ -37,4 +37,9 @@ public class User {
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
     }
+
+    @Override
+    public String toString() {
+        return username;
+    }
 }
