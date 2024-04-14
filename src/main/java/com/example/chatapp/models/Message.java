@@ -6,7 +6,7 @@ public class Message {
     private String receiver;
     private String content;
 
-    private int groupId;
+    private Integer groupId;
 
     public Message(String sender, String receiver, String content) {
         this.sender = sender;
@@ -39,11 +39,11 @@ public class Message {
         this.content = content;
     }
 
-    public int getGroupId() {
+    public Integer getGroupId() {
         return groupId;
     }
 
-    public void setGroupId(int groupId) {
+    public void setGroupId(Integer groupId) {
         this.groupId = groupId;
     }
 }

@@ -62,7 +62,9 @@ public class ClientHandler implements Runnable {
 
                         for (ClientHandler client : ServerController.clients) {
                             if (client.getUsername().equals(receiverUsername)) {
-                                if(MessageDAO.save(new Message(senderUsername, receiverUsername, messageContent))){
+                                var newMessage = new Message(senderUsername, receiverUsername, messageContent);
+                                newMessage.setGroupId(null);
+                                if(MessageDAO.save(newMessage)){
                                     System.out.println("Message saved");
                                     DataOutputStream receiverOutput = client.getOutputStream();
                                     String sendMessage = String.join(",", new String[]{"SEND_TEXT", senderUsername, receiverUsername, messageContent, senderAvatar});
@@ -201,6 +203,12 @@ public class ClientHandler implements Runnable {
                                 client.getOutputStream().flush();
                                 break;
                             }
+                        }
+                        break;
+                    }
+                    case "ADD_GROUP": {
+                        for (ClientHandler client : ServerController.clients) {
+                            ServerController.updateGroupsOfUser(client.getUsername());
                         }
                         break;
                     }

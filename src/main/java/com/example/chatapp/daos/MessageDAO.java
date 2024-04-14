@@ -22,8 +22,11 @@ public class MessageDAO {
             psmt.setString(1, newMessage.getSender());
             psmt.setString(2, newMessage.getReceiver());
             psmt.setString(3, newMessage.getContent());
-            psmt.setInt(4, newMessage.getGroupId());
-
+            if(newMessage.getGroupId() == null) {
+                psmt.setNull(4, java.sql.Types.INTEGER);
+            }else {
+                psmt.setInt(4, newMessage.getGroupId());
+            }
             if (psmt.executeUpdate() > 0) {
                 return true;
             }

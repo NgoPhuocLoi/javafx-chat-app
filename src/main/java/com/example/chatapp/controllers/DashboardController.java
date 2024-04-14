@@ -558,9 +558,10 @@ public class DashboardController implements Initializable {
             AddGroupController controller = loader.getController();
             controller.loadInitialData(user.getUsername());
             Stage stage = new Stage();
-            stage.setOnCloseRequest(e -> {
+            stage.setOnHidden(e -> {
                 try {
-                    user.getOutputStream().writeUTF("GET_GROUPS");
+                    System.out.println("Sending ADD_GROUP");
+                    user.getOutputStream().writeUTF("ADD_GROUP");
                     user.getOutputStream().flush();
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);

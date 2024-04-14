@@ -157,6 +157,9 @@ public class ServerController {
 
     public static void updateGroupsOfUser(String username){
         var result = GroupChatDAO.getGroupsByUsername(username);
+        if(result.isEmpty()){
+            return;
+        }
         System.out.println("Groups of user: " + result.stream().map(GroupChat::getName).collect(Collectors.joining(", ")));
         StringBuilder prepareMessage = new StringBuilder(" ");
         for (var group : result) {
