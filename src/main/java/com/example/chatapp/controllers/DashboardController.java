@@ -640,11 +640,15 @@ public class DashboardController implements Initializable {
 
         Label timestampLabel = new Label();
         timestampLabel.setText(timestamp);
-        timestampLabel.setStyle("-fx-font-size: 8px;");
-        VBox.setMargin(timestampLabel, new javafx.geometry.Insets(5, 0, 0, 0));
+        timestampLabel.setStyle("-fx-font-size: 8px");
+
         if(!isSender && groupIdChattingWith.getValue() != -1){
+            senderLabel.setStyle("-fx-text-fill: #999");
+            timestampLabel.setStyle("-fx-text-fill: #999; -fx-font-size: 8px");
             messageContentContainer.getChildren().add(senderLabel);
         }
+        VBox.setMargin(timestampLabel, new javafx.geometry.Insets(5, 0, 0, 0));
+
         messageContentContainer.getChildren().addAll(messageLabel, timestampLabel);
 
 
@@ -682,23 +686,17 @@ public class DashboardController implements Initializable {
 
         VBox messageContentContainer = new VBox();
 
-        Label senderLabel = new Label();
-        senderLabel.setText(sender);
-        senderLabel.setStyle("-fx-font-size: 10px;");
-
         ImageView messageImage = new ImageView();
         Image imageMessage = new Image(imageUrl, 150, 150, true, true);
         messageImage.setImage(imageMessage);
 
         Label timestampLabel = new Label();
         timestampLabel.setText(timestamp);
-        timestampLabel.setStyle("-fx-font-size: 8px;");
+        timestampLabel.setStyle("-fx-font-size: 8px; -fx-background-color: #7f7f7f; -fx-text-fill: #fff;" +
+                "-fx-padding: 2px 5px; -fx-border-radius: 5px; -fx-background-radius: 5px;");
 
         VBox.setMargin(timestampLabel, new javafx.geometry.Insets(5, 0, 0, 0));
 
-        if(!isSender && groupIdChattingWith.getValue() != -1){
-            messageContentContainer.getChildren().add(senderLabel);
-        }
 
         messageContentContainer.getChildren().addAll(messageImage, timestampLabel);
 
