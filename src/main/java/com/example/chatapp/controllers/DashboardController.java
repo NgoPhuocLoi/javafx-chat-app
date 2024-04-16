@@ -1,17 +1,13 @@
 package com.example.chatapp.controllers;
 
 import com.example.chatapp.ChatApplication;
-import com.example.chatapp.daos.UserDAO;
 import com.example.chatapp.models.GroupChat;
-import com.example.chatapp.models.User;
 import com.example.chatapp.utils.CloudinaryUploader;
 import com.example.chatapp.utils.UserData;
 import com.example.chatapp.utils.UserProps;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleMapProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.ObservableMap;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -24,7 +20,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -661,7 +659,7 @@ public class DashboardController implements Initializable {
         HBox.setMargin(userAvatar, new javafx.geometry.Insets(0, avatarMarginRightValue, 0, avatarMarginLeftValue));
 
         ImageView messageImage = new ImageView();
-        Image imageMessage = new Image(imageUrl, 100, 100, false, true);
+        Image imageMessage = new Image(imageUrl, 150, 150, true, true);
         messageImage.setImage(imageMessage);
 
         if (isSender) {

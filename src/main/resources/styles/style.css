@@ -1,3 +1,63 @@
+.btn{
+    -fx-background-color: #828384;
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+}
+
+.btn:hover{
+    -fx-background-color: #a1a2a3;
+}
+
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: #636566;
+}
+
+.tab-pane .tab {
+    -fx-background-color: #828384;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #a1a2a3;
+}
+
+.tab .tab-label {
+    -fx-text-fill: white;
+}
+
+.tab:selected .tab-label {
+    -fx-font-weight: bold;
+}
+
+.scroll-pane {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar:vertical {
+    -fx-background-color: #828384;
+}
+
+.scroll-bar:vertical .thumb {
+    -fx-background-color: #a1a2a3;
+}
+
+.scroll-bar > .increment-button > .increment-arrow,
+.scroll-bar > .decrement-button > .decrement-arrow {
+    -fx-background-color: #a1a2a3
+}
+
+.table-view *.scroll-bar:horizontal {
+    -fx-max-height: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+}
+
+
+
 .dark-gray-bg{
     -fx-background-color: #46474A;
 }

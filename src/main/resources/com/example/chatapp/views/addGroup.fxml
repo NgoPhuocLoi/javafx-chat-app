@@ -9,18 +9,21 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="451.0" prefWidth="458.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.chatapp.controllers.AddGroupController">
+<AnchorPane prefHeight="451.0" prefWidth="458.0" styleClass="gray-bg" stylesheets="@../../../../styles/style.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.chatapp.controllers.AddGroupController">
    <children>
-      <Label layoutX="144.0" layoutY="28.0" prefHeight="48.0" prefWidth="155.0" text="NEW GROUP">
+      <Label layoutX="144.0" layoutY="28.0" prefHeight="48.0" prefWidth="155.0" text="NEW GROUP" textFill="WHITE">
          <font>
             <Font name="System Bold" size="24.0" />
          </font>
       </Label>
-      <Label layoutX="39.0" layoutY="89.0" text="Group name:" />
+      <Label layoutX="39.0" layoutY="89.0" text="Group name:" textFill="WHITE" />
       <TextField fx:id="tf_groupName" layoutX="122.0" layoutY="85.0" prefHeight="26.0" prefWidth="261.0" />
-      <Label layoutX="81.0" layoutY="128.0" text="User:" />
+      <Label layoutX="81.0" layoutY="128.0" text="User:" textFill="WHITE" />
       <ComboBox fx:id="cbx_user" layoutX="122.0" layoutY="124.0" prefHeight="26.0" prefWidth="171.0" />
-      <Button layoutX="307.0" layoutY="124.0" mnemonicParsing="false" onAction="#addUserToGroup" prefHeight="26.0" prefWidth="81.0" text="Add user" />
+      <Button layoutX="307.0" layoutY="124.0" mnemonicParsing="false" onAction="#addUserToGroup" prefHeight="26.0" prefWidth="81.0" styleClass="btn" text="Add user">
+         <font>
+            <Font name="System Bold" size="12.0" />
+         </font></Button>
       <TableView fx:id="tbl_groupUsers" layoutX="63.0" layoutY="172.0" prefHeight="194.0" prefWidth="330.0">
         <columns>
           <TableColumn fx:id="tblCol_no" prefWidth="60.000003814697266" text="No." />
@@ -28,7 +31,13 @@
             <TableColumn fx:id="tblCol_action" prefWidth="92.79998779296875" text="Action" />
         </columns>
       </TableView>
-      <Button fx:id="btn_addNewGroup" layoutX="229.0" layoutY="392.0" mnemonicParsing="false" onAction="#addNewGroup" prefHeight="26.0" prefWidth="110.0" text="Add new group" />
-      <Button layoutX="125.0" layoutY="392.0" mnemonicParsing="false" onAction="#reset" prefHeight="26.0" prefWidth="82.0" text="Reset" />
+      <Button fx:id="btn_addNewGroup" layoutX="229.0" layoutY="392.0" mnemonicParsing="false" onAction="#addNewGroup" prefHeight="26.0" prefWidth="110.0" styleClass="btn" text="Add new group">
+         <font>
+            <Font name="System Bold" size="12.0" />
+         </font></Button>
+      <Button layoutX="125.0" layoutY="392.0" mnemonicParsing="false" onAction="#reset" prefHeight="26.0" prefWidth="82.0" styleClass="btn" text="Reset">
+         <font>
+            <Font name="System Bold" size="12.0" />
+         </font></Button>
    </children>
 </AnchorPane>

@@ -83,6 +83,10 @@ public class AddGroupController implements Initializable {
 
                     deleteIcon.setOnMouseClicked(e -> {
                         User selectedUser = tbl_groupUsers.getSelectionModel().getSelectedItem();
+                        if(groupUsers.indexOf(selectedUser) == 0){
+                            showAlertBox("Error", "You cannot remove yourself from the group");
+                            return;
+                        }
                         groupUsers.remove(selectedUser);
                         cbx_user.getItems().add(selectedUser);
                         showUserTable();
@@ -153,7 +157,7 @@ public class AddGroupController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
+        tbl_groupUsers.setPlaceholder(new Label("No user added yet"));
 
 
     }
