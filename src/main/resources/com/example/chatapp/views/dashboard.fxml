@@ -18,7 +18,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane fx:id="dashboardContainer" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="791.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.chatapp.controllers.DashboardController">
+<BorderPane fx:id="dashboardContainer" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="791.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.chatapp.controllers.DashboardController">
    <left>
       <HBox prefHeight="400.0" prefWidth="253.0" BorderPane.alignment="CENTER">
          <children>
@@ -165,7 +165,7 @@
                         <Insets right="10.0" />
                      </HBox.margin>
                   </ImageView>
-                  <ImageView fitHeight="150.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fitHeight="150.0" fitWidth="25.0" onMouseClicked="#onChooseImage" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@../../../../images/icons8-attachment-50.png" />
                      </image>

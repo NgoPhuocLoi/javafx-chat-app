@@ -87,6 +87,7 @@ public class ServerController {
             }
         }catch(Exception exception) {
             System.out.println("ERRORRRR .");
+            exception.printStackTrace();
             closeAll();
         }
         }

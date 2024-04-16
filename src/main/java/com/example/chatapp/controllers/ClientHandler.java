@@ -104,30 +104,54 @@ public class ClientHandler implements Runnable {
                         }
                         break;
                     }
-                    case "SEND_FILE": {
-//                        String receiver = messages[1];
-//                        String fileName = messages[2];
-//                        byte[] fileContent = new byte[1024];
-//                        int bytesRead;
-//
-//                        DataOutputStream receiverOutput = null;
-//
-//                        for (ClientHandler client : ServerController.clients) {
-//                            if (client.getUsername().equals(receiver)) {
-//                                receiverOutput = client.getOutputStream();
-//                                receiverOutput.writeUTF("RECEIVE_FILE," + user.getUsername() + "," + fileName);
-//                                receiverOutput.flush();
-//                                break;
-//                            }
-//                        }
-//
-//                        if (receiverOutput != null) {
-//                            OutputStream fileOutputStream = clientSocket.getOutputStream();
-//                            while ((bytesRead = input.read(fileContent)) != -1) {
-//                                fileOutputStream.write(fileContent, 0, bytesRead);
-//                            }
-//                            fileOutputStream.flush();
-//                        }
+                    case "SEND_IMAGE": {
+                        String senderUsername = messages[1];
+                        String receiverUsername = messages[2];
+                        String imageUrl = messages[3];
+                        String senderAvatar = messages[4];
+
+                        for (ClientHandler client : ServerController.clients) {
+                            if (client.getUsername().equals(receiverUsername)) {
+                                var newMessage = new Message(senderUsername, receiverUsername, imageUrl);
+                                newMessage.setGroupId(null);
+                                if(MessageDAO.save(newMessage)){
+                                    System.out.println("Message saved");
+                                    DataOutputStream receiverOutput = client.getOutputStream();
+                                    String sendMessage = String.join(",", new String[]{"SEND_IMAGE", senderUsername, receiverUsername, imageUrl, senderAvatar});
+                                    System.out.println("sendMessage: "+ sendMessage);
+                                    receiverOutput.writeUTF(sendMessage);
+                                    receiverOutput.flush();
+                                } else {
+                                    System.out.println("Message not saved");
+                                }
+
+                            }
+                        }
+                        break;
+                    }
+                    case "SEND_GROUP_IMAGE": {
+                        String senderUsername = messages[1];
+                        int groupId = Integer.parseInt(messages[2]);
+                        String imageUrl = messages[3];
+                        String senderAvatar = messages[4];
+                        List<String> members = GroupChatDAO.getMembersInGroup(groupId);
+                        Message newMessage = new Message(senderUsername, null, imageUrl);
+                        newMessage.setGroupId(groupId);
+                        MessageDAO.save(newMessage);
+                        for (ClientHandler client : ServerController.clients) {
+                            if (members.contains(client.getUsername()) && !client.getUsername().equals(senderUsername)) {
+
+                                System.out.println("Message saved");
+                                DataOutputStream receiverOutput = client.getOutputStream();
+                                String sendMessage = String.join(",", new String[]{"SEND_GROUP_IMAGE", senderUsername, String.valueOf(groupId), imageUrl, senderAvatar});
+                                System.out.println("sendMessage: "+ sendMessage);
+                                receiverOutput.writeUTF(sendMessage);
+                                receiverOutput.flush();
+                            } else {
+                                System.out.println("Message not saved");
+                            }
+
+                        }
                         break;
                     }
                     case "GET_MESSAGES": {

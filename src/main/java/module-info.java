@@ -4,6 +4,8 @@ module com.example.chatapp {
     requires mysql.connector.j;
     requires java.sql;
     requires com.fasterxml.jackson.databind;
+    requires cloudinary.http45;
+    requires cloudinary.core;
 
 
     opens com.example.chatapp to javafx.fxml;

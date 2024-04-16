@@ -4,6 +4,7 @@ import com.example.chatapp.ChatApplication;
 import com.example.chatapp.daos.UserDAO;
 import com.example.chatapp.models.GroupChat;
 import com.example.chatapp.models.User;
+import com.example.chatapp.utils.CloudinaryUploader;
 import com.example.chatapp.utils.UserData;
 import com.example.chatapp.utils.UserProps;
 import javafx.application.Platform;
@@ -112,6 +113,27 @@ public class DashboardController implements Initializable {
     }
 
     @FXML
+    public void onChooseImage(){
+        Stage stage = (Stage) dashboardContainer.getScene().getWindow();
+        FileChooser fc = new FileChooser();
+        fc.setTitle("Choose a image");
+        FileChooser.ExtensionFilter imageFilter = new FileChooser.ExtensionFilter("Image Files", "*.jpg", "*.png");
+        fc.getExtensionFilters().add(imageFilter);
+        File file = fc.showOpenDialog(stage);
+        if (file != null) {
+            System.out.println(file.toURI().toString());
+
+            String uploadedImageUrl = CloudinaryUploader.upload(file.getPath());
+            appendImageMessage(uploadedImageUrl, true, user.getAvatarUrl());
+            if(userChattingWith.getValue() != null) {
+                sendImageMessageToUser(uploadedImageUrl, userChattingWith.getValue());
+            } else if(groupIdChattingWith.getValue() != -1) {
+                sendImageMessageToGroup(uploadedImageUrl, groupIdChattingWith.getValue());
+            }
+        }
+    }
+
+    @FXML
     public void onSendBtnClick() {
 
         String message = chatInput.getText();
@@ -134,6 +156,26 @@ public class DashboardController implements Initializable {
             System.out.println("Error sending message to server");
         }
 
+    }
+
+    private void sendImageMessageToUser(String imageUrl, String receiver) {
+        String messageToServer = String.join(",", new String[]{"SEND_IMAGE", user.getUsername(), receiver, imageUrl, user.getAvatarUrl().isEmpty() ? "NoAvatar" : user.getAvatarUrl()});
+        try {
+            user.getOutputStream().writeUTF(messageToServer);
+            user.getOutputStream().flush();
+        } catch (IOException e) {
+            System.out.println("Error sending message to server");
+        }
+    }
+
+    private void sendImageMessageToGroup(String imageUrl, int groupId) {
+        String messageToServer = String.join(",", new String[]{"SEND_GROUP_IMAGE", user.getUsername(), groupId + "", imageUrl, user.getAvatarUrl().isEmpty() ? "NoAvatar" : user.getAvatarUrl()});
+        try {
+            user.getOutputStream().writeUTF(messageToServer);
+            user.getOutputStream().flush();
+        } catch (IOException e) {
+            System.out.println("Error sending message to server");
+        }
     }
 
     private void sendTextMessageToGroup(String message, int groupId) {
@@ -287,13 +329,55 @@ public class DashboardController implements Initializable {
                                     });
                                 } else {
                                     onlineUsersBox.getChildren().forEach(child -> {
-                                        if (child.getId().equals(groupId + "")) {
+                                        if (child.getId().equals(sender)) {
                                             child.getStyleClass().add("red-bg");
                                         }
                                     });
                                 }
-
+                            break;
                             // In tin nhắn lên màn hình chat với người gửi
+                        }
+                        case "SEND_IMAGE": {
+                            // Nhận một tin nhắn hình ảnh
+                            String sender = messageReceived[1];
+                            String receiver = messageReceived[2];
+                            String imageUrl = messageReceived[3];
+                            String senderAvatar = messageReceived[4].equals("NoAvatar") ? "" : messageReceived[4];
+                            // In tin nhắn lên màn hình chat với người gửi
+                            if (Objects.equals(receiver, user.getUsername())) {
+                                if (Objects.equals(sender, userChattingWith.getValue())) {
+                                    Platform.runLater(() -> {
+                                        appendImageMessage(imageUrl, false, senderAvatar);
+                                    });
+                                } else {
+                                    onlineUsersBox.getChildren().forEach(child -> {
+                                        if (child.getId().equals(sender)) {
+                                            child.getStyleClass().add("red-bg");
+                                        }
+                                    });
+                                }
+                            }
+                            break;
+                        }
+                        case "SEND_GROUP_IMAGE": {
+                            // Nhận một tin nhắn hình ảnh
+                            String sender = messageReceived[1];
+                            int groupId = Integer.parseInt(messageReceived[2]);
+                            String imageUrl = messageReceived[3];
+                            String senderAvatar = messageReceived[4].equals("NoAvatar") ? "" : messageReceived[4];
+                            // In tin nhắn lên màn hình chat với người gửi
+                            if (groupId == groupIdChattingWith.getValue()) {
+                                Platform.runLater(() -> {
+                                    appendImageMessage(imageUrl, false, senderAvatar);
+                                });
+                            } else {
+                                onlineUsersBox.getChildren().forEach(child -> {
+                                    if (child.getId().equals(sender)) {
+                                        child.getStyleClass().add("red-bg");
+                                    }
+                                });
+                            }
+                            break;
                         }
                         case "File": {
                             // Nhận một file
@@ -355,8 +439,15 @@ public class DashboardController implements Initializable {
                                     String content = messageParts[0];
                                     String senderUsername = messageParts[1];
                                     String userAvatar = messageParts[2].equals("NoAvatar") ? "" : messageParts[2];
+
+                                    boolean isImageMessage = content.startsWith("http://res.cloudinary.com");
+
                                     Platform.runLater(() -> {
-                                        appendMessage(content, senderUsername.equals(user.getUsername()), userAvatar);
+                                        if(isImageMessage){
+                                            appendImageMessage(content, senderUsername.equals(user.getUsername()), userAvatar);
+                                        }else {
+                                            appendMessage(content, senderUsername.equals(user.getUsername()), userAvatar);
+                                        }
                                     });
                                 }
                             } catch (Exception e) {
@@ -546,6 +637,38 @@ public class DashboardController implements Initializable {
             messageContainer.getChildren().addAll(userAvatar, messageLabel);
         }
 
+
+        this.messagesContainer.getChildren().add(messageContainer);
+    }
+
+    private void appendImageMessage(String imageUrl, boolean isSender, String userAvatarUrl) {
+        HBox messageContainer = new HBox();
+        messageContainer.setPadding(new javafx.geometry.Insets(5, 10, 5, 10));
+
+        Pos alignment = isSender ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT;
+        messageContainer.setAlignment(alignment);
+
+        Image image = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/icons8-avatar-48.png")));
+        if (!userAvatarUrl.isEmpty()) {
+            image = new Image(userAvatarUrl, 40, 40, false, true);
+        }
+        ImageView userAvatar = new ImageView();
+        userAvatar.setImage(image);
+
+        int avatarMarginLeftValue = isSender ? 10 : 0;
+        int avatarMarginRightValue = isSender ? 0 : 10;
+
+        HBox.setMargin(userAvatar, new javafx.geometry.Insets(0, avatarMarginRightValue, 0, avatarMarginLeftValue));
+
+        ImageView messageImage = new ImageView();
+        Image imageMessage = new Image(imageUrl, 100, 100, false, true);
+        messageImage.setImage(imageMessage);
+
+        if (isSender) {
+            messageContainer.getChildren().addAll(messageImage, userAvatar);
+        } else {
+            messageContainer.getChildren().addAll(userAvatar, messageImage);
+        }
 
         this.messagesContainer.getChildren().add(messageContainer);
     }
