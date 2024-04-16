@@ -328,8 +328,8 @@ public class DashboardController implements Initializable {
                                         appendMessage(message, false, senderAvatar);
                                     });
                                 } else {
-                                    onlineUsersBox.getChildren().forEach(child -> {
-                                        if (child.getId().equals(sender)) {
+                                    groupsBox.getChildren().forEach(child -> {
+                                        if (child.getId().equals(groupId + "")){
                                             child.getStyleClass().add("red-bg");
                                         }
                                     });
@@ -371,8 +371,8 @@ public class DashboardController implements Initializable {
                                     appendImageMessage(imageUrl, false, senderAvatar);
                                 });
                             } else {
-                                onlineUsersBox.getChildren().forEach(child -> {
-                                    if (child.getId().equals(sender)) {
+                                groupsBox.getChildren().forEach(child -> {
+                                    if (child.getId().equals(groupId + "")) {
                                         child.getStyleClass().add("red-bg");
                                     }
                                 });
