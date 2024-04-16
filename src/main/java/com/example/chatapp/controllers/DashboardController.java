@@ -98,8 +98,9 @@ public class DashboardController implements Initializable {
         File file = fc.showOpenDialog(stage);
         if (file != null) {
             System.out.println(file.toURI().toString());
+            String uploadedImageUrl = CloudinaryUploader.upload(file.getPath());
             try {
-                user.getOutputStream().writeUTF("CHANGE_AVATAR," + user.getUsername() + "," + file.toURI());
+                user.getOutputStream().writeUTF("CHANGE_AVATAR," + user.getUsername() + "," + uploadedImageUrl);
                 user.getOutputStream().flush();
                 if (userChattingWith.getValue() != null) {
                     user.getOutputStream().writeUTF("GET_MESSAGES," + user.getUsername() + "," + userChattingWith.getValue());
@@ -525,7 +526,7 @@ public class DashboardController implements Initializable {
 
         });
 
-        Image avatar = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/icons8-avatar-48.png")));
+        Image avatar = new Image("https://res.cloudinary.com/dudsfr6aq/image/upload/v1713270703/xcv48awfzgch3jqnqvyx.png");
         if (!avatarUrl.isEmpty()) {
             avatar = new Image(avatarUrl, 40, 40, false, true);
         }
@@ -615,7 +616,7 @@ public class DashboardController implements Initializable {
         Pos alignment = isSender ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT;
         messageContainer.setAlignment(alignment);
 
-        Image image = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/icons8-avatar-48.png")));
+        Image image = new Image("https://res.cloudinary.com/dudsfr6aq/image/upload/v1713270703/xcv48awfzgch3jqnqvyx.png");
         if (!userAvatarUrl.isEmpty()) {
             image = new Image(userAvatarUrl, 40, 40, false, true);
         }
@@ -672,7 +673,7 @@ public class DashboardController implements Initializable {
         Pos alignment = isSender ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT;
         messageContainer.setAlignment(alignment);
 
-        Image image = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/icons8-avatar-48.png")));
+        Image image = new Image("https://res.cloudinary.com/dudsfr6aq/image/upload/v1713270703/xcv48awfzgch3jqnqvyx.png");
         if (!userAvatarUrl.isEmpty()) {
             image = new Image(userAvatarUrl, 40, 40, false, true);
         }

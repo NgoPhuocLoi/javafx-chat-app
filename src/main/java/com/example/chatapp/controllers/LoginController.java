@@ -196,7 +196,7 @@ public class LoginController implements Initializable {
                 clientSocket.close();
             }
 
-            clientSocket = new Socket("127.0.0.1", 9999);
+            clientSocket = new Socket("192.168.234.36", 9999);
             System.out.println(clientSocket);
             this.input = new DataInputStream(clientSocket.getInputStream());
             this.output = new DataOutputStream(clientSocket.getOutputStream());

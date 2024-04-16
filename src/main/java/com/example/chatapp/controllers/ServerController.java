@@ -37,8 +37,8 @@ public class ServerController {
                 if (request.equals("SIGN_UP")) {
                     String username = inputStream.readUTF();
                     String password = inputStream.readUTF();
-                    File defaultAvatar = new File("src/main/resources/images/icons8-avatar-48.png");
-                    User user = new User(username, password, defaultAvatar.toURI().toString());
+                    String defaultAvatarUrl = "https://res.cloudinary.com/dudsfr6aq/image/upload/v1713270703/xcv48awfzgch3jqnqvyx.png";
+                    User user = new User(username, password, defaultAvatarUrl);
                     System.out.println(username + ": " + password);
                     if (!isExistedUserWithUsername(username)) {
                         this.saveUser(user);
