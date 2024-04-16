@@ -84,14 +84,14 @@
 
 .incoming-bubble{
     -fx-background-color: #ffffff;
-    -fx-background-radius: 20px;
+    -fx-background-radius: 10px;
     -fx-padding: 8px 14px;
     -fx-max-width: 300px;
 }
 
 .outgoing-bubble{
     -fx-background-color: #50C984;
-    -fx-background-radius: 20px;
+    -fx-background-radius: 10px;
     -fx-padding: 8px 14px;
     -fx-text-fill: #ffffff;
 }

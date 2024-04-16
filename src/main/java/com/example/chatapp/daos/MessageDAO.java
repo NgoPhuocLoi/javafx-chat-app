@@ -49,6 +49,9 @@ public class MessageDAO {
             ResultSet rs = psmt.executeQuery();
             while(rs.next()){
                 Message message = new Message(rs.getString(2), rs.getString(3), rs.getString(4));
+                String timestamp = rs.getString(6);
+                System.out.println(timestamp);
+                message.setTimestamp(timestamp);
                 messages.add(message);
 
             }
@@ -70,6 +73,9 @@ public class MessageDAO {
             while(rs.next()){
                 Message message = new Message(rs.getString(2), rs.getString(3), rs.getString(4));
                 message.setGroupId(rs.getInt(5));
+                String timestamp = rs.getString(6);
+                System.out.println(timestamp);
+                message.setTimestamp(timestamp);
                 messages.add(message);
 
             }

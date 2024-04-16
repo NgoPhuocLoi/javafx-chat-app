@@ -174,7 +174,7 @@ public class ClientHandler implements Runnable {
                         var result = MessageDAO.getMessages(senderUsername, receiverUsername);
                         StringBuilder prepareMessage = new StringBuilder();
                         for (Message message : result) {
-                            prepareMessage.append(message.getContent()).append("|").append(message.getSender()).append("|").append(userAvatar.get(message.getSender())).append("||");
+                            prepareMessage.append(message.getContent()).append("|").append(message.getSender()).append("|").append(userAvatar.get(message.getSender())).append("|").append(message.getTimestamp(), 0, message.getTimestamp().length() - 3).append("||");
                         }
 
                         for (ClientHandler client : ServerController.clients) {
@@ -218,7 +218,7 @@ public class ClientHandler implements Runnable {
                         }));
                         StringBuilder prepareMessage = new StringBuilder();
                         for (Message message : result) {
-                            prepareMessage.append(message.getContent()).append("|").append(message.getSender()).append("|").append(membersAvatar.get(message.getSender())).append("||");
+                            prepareMessage.append(message.getContent()).append("|").append(message.getSender()).append("|").append(membersAvatar.get(message.getSender())).append("|").append(message.getTimestamp(), 0, message.getTimestamp().length() - 3).append("||");
                         }
                         System.out.println("Prepare message: " + prepareMessage);
                         for (ClientHandler client : ServerController.clients) {

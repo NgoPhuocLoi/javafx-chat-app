@@ -28,18 +28,19 @@ CREATE TABLE `groupmembers` (
 
 DROP TABLE IF EXISTS `messages`;
 CREATE TABLE `messages` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `sender` varchar(255) NOT NULL,
-  `receiver` varchar(255) DEFAULT NULL,
-  `content` varchar(255) NOT NULL,
-  `group_id` int DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `sender` (`sender`),
-  KEY `receiver` (`receiver`),
-  KEY `group_id` (`group_id`),
-  CONSTRAINT `messages_ibfk_1` FOREIGN KEY (`sender`) REFERENCES `users` (`username`),
-  CONSTRAINT `messages_ibfk_2` FOREIGN KEY (`receiver`) REFERENCES `users` (`username`),
-  CONSTRAINT `messages_ibfk_3` FOREIGN KEY (`group_id`) REFERENCES `chatgroups` (`group_id`)
+    `id` int NOT NULL AUTO_INCREMENT,
+    `sender` varchar(255) NOT NULL,
+    `receiver` varchar(255) DEFAULT NULL,
+    `content` varchar(255) NOT NULL,
+    `group_id` int DEFAULT NULL,
+    `createdAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `sender` (`sender`),
+    KEY `receiver` (`receiver`),
+    KEY `group_id` (`group_id`),
+    CONSTRAINT `messages_ibfk_1` FOREIGN KEY (`sender`) REFERENCES `users` (`username`),
+    CONSTRAINT `messages_ibfk_2` FOREIGN KEY (`receiver`) REFERENCES `users` (`username`),
+    CONSTRAINT `messages_ibfk_3` FOREIGN KEY (`group_id`) REFERENCES `chatgroups` (`group_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 

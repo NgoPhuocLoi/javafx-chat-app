@@ -3,6 +3,7 @@ package com.example.chatapp.controllers;
 import com.example.chatapp.ChatApplication;
 import com.example.chatapp.models.GroupChat;
 import com.example.chatapp.utils.CloudinaryUploader;
+import com.example.chatapp.utils.TimeFormatter;
 import com.example.chatapp.utils.UserData;
 import com.example.chatapp.utils.UserProps;
 import javafx.application.Platform;
@@ -32,6 +33,9 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 
 public class DashboardController implements Initializable {
@@ -122,7 +126,7 @@ public class DashboardController implements Initializable {
             System.out.println(file.toURI().toString());
 
             String uploadedImageUrl = CloudinaryUploader.upload(file.getPath());
-            appendImageMessage(uploadedImageUrl, true, user.getAvatarUrl());
+            appendImageMessage(uploadedImageUrl, user.getUsername(), user.getAvatarUrl(), TimeFormatter.now());
             if(userChattingWith.getValue() != null) {
                 sendImageMessageToUser(uploadedImageUrl, userChattingWith.getValue());
             } else if(groupIdChattingWith.getValue() != -1) {
@@ -136,7 +140,7 @@ public class DashboardController implements Initializable {
 
         String message = chatInput.getText();
         System.out.println("Sending message: " + message);
-        appendMessage(message, true, user.getAvatarUrl());
+        appendMessage(message, user.getUsername(), user.getAvatarUrl(), TimeFormatter.now());
         if(userChattingWith.getValue() != null) {
             sendTextMessageToUser(message, userChattingWith.getValue());
         } else if(groupIdChattingWith.getValue() != -1) {
@@ -298,7 +302,7 @@ public class DashboardController implements Initializable {
                             if (Objects.equals(receiver, user.getUsername())) {
                                 if (Objects.equals(sender, userChattingWith.getValue())) {
                                     Platform.runLater(() -> {
-                                        appendMessage(message, false, senderAvatar);
+                                        appendMessage(message, userChattingWith.getValue(), senderAvatar, TimeFormatter.now());
                                     });
                                 } else {
                                     onlineUsersBox.getChildren().forEach(child -> {
@@ -323,7 +327,7 @@ public class DashboardController implements Initializable {
 
                                 if (groupId == groupIdChattingWith.getValue()) {
                                     Platform.runLater(() -> {
-                                        appendMessage(message, false, senderAvatar);
+                                        appendMessage(message, sender, senderAvatar, TimeFormatter.now());
                                     });
                                 } else {
                                     groupsBox.getChildren().forEach(child -> {
@@ -345,7 +349,7 @@ public class DashboardController implements Initializable {
                             if (Objects.equals(receiver, user.getUsername())) {
                                 if (Objects.equals(sender, userChattingWith.getValue())) {
                                     Platform.runLater(() -> {
-                                        appendImageMessage(imageUrl, false, senderAvatar);
+                                        appendImageMessage(imageUrl, sender, senderAvatar, TimeFormatter.now());
                                     });
                                 } else {
                                     onlineUsersBox.getChildren().forEach(child -> {
@@ -366,7 +370,7 @@ public class DashboardController implements Initializable {
                             // In tin nhắn lên màn hình chat với người gửi
                             if (groupId == groupIdChattingWith.getValue()) {
                                 Platform.runLater(() -> {
-                                    appendImageMessage(imageUrl, false, senderAvatar);
+                                    appendImageMessage(imageUrl, sender, senderAvatar, TimeFormatter.now());
                                 });
                             } else {
                                 groupsBox.getChildren().forEach(child -> {
@@ -437,14 +441,14 @@ public class DashboardController implements Initializable {
                                     String content = messageParts[0];
                                     String senderUsername = messageParts[1];
                                     String userAvatar = messageParts[2].equals("NoAvatar") ? "" : messageParts[2];
-
+                                    String timestamp = messageParts[3];
                                     boolean isImageMessage = content.startsWith("http://res.cloudinary.com");
 
                                     Platform.runLater(() -> {
                                         if(isImageMessage){
-                                            appendImageMessage(content, senderUsername.equals(user.getUsername()), userAvatar);
+                                            appendImageMessage(content, senderUsername, userAvatar, timestamp);
                                         }else {
-                                            appendMessage(content, senderUsername.equals(user.getUsername()), userAvatar);
+                                            appendMessage(content, senderUsername, userAvatar, timestamp);
                                         }
                                     });
                                 }
@@ -603,7 +607,8 @@ public class DashboardController implements Initializable {
 //        }
         groupsBox.getChildren().add(groupContainer);
     }
-    private void appendMessage(String message, boolean isSender, String userAvatarUrl) {
+    private void appendMessage(String message, String sender, String userAvatarUrl, String timestamp) {
+        boolean isSender = sender.equals(user.getUsername());
         HBox messageContainer = new HBox();
         messageContainer.setPadding(new javafx.geometry.Insets(5, 10, 5, 10));
 
@@ -621,25 +626,42 @@ public class DashboardController implements Initializable {
         int avatarMarginRightValue = isSender ? 0 : 10;
 
         HBox.setMargin(userAvatar, new javafx.geometry.Insets(0, avatarMarginRightValue, 0, avatarMarginLeftValue));
+
+        VBox messageContentContainer = new VBox();
+
+        Label senderLabel = new Label();
+        senderLabel.setText(sender);
+        senderLabel.setStyle("-fx-font-size: 10px;");
 
         Label messageLabel = new Label();
         messageLabel.setText(message);
         messageLabel.setStyle("-fx-font-size: 12px;");
 
 
+        Label timestampLabel = new Label();
+        timestampLabel.setText(timestamp);
+        timestampLabel.setStyle("-fx-font-size: 8px;");
+        VBox.setMargin(timestampLabel, new javafx.geometry.Insets(5, 0, 0, 0));
+        if(!isSender && groupIdChattingWith.getValue() != -1){
+            messageContentContainer.getChildren().add(senderLabel);
+        }
+        messageContentContainer.getChildren().addAll(messageLabel, timestampLabel);
+
+
         if (isSender) {
-            messageLabel.getStyleClass().add("outgoing-bubble");
-            messageContainer.getChildren().addAll(messageLabel, userAvatar);
+            messageContentContainer.getStyleClass().add("outgoing-bubble");
+            messageContainer.getChildren().addAll(messageContentContainer, userAvatar);
         } else {
-            messageLabel.getStyleClass().add("incoming-bubble");
-            messageContainer.getChildren().addAll(userAvatar, messageLabel);
+            messageContentContainer.getStyleClass().add("incoming-bubble");
+            messageContainer.getChildren().addAll(userAvatar, messageContentContainer);
         }
 
 
         this.messagesContainer.getChildren().add(messageContainer);
     }
 
-    private void appendImageMessage(String imageUrl, boolean isSender, String userAvatarUrl) {
+    private void appendImageMessage(String imageUrl, String sender, String userAvatarUrl, String timestamp) {
+        boolean isSender = sender.equals(user.getUsername());
         HBox messageContainer = new HBox();
         messageContainer.setPadding(new javafx.geometry.Insets(5, 10, 5, 10));
 
@@ -658,14 +680,32 @@ public class DashboardController implements Initializable {
 
         HBox.setMargin(userAvatar, new javafx.geometry.Insets(0, avatarMarginRightValue, 0, avatarMarginLeftValue));
 
+        VBox messageContentContainer = new VBox();
+
+        Label senderLabel = new Label();
+        senderLabel.setText(sender);
+        senderLabel.setStyle("-fx-font-size: 10px;");
+
         ImageView messageImage = new ImageView();
         Image imageMessage = new Image(imageUrl, 150, 150, true, true);
         messageImage.setImage(imageMessage);
 
+        Label timestampLabel = new Label();
+        timestampLabel.setText(timestamp);
+        timestampLabel.setStyle("-fx-font-size: 8px;");
+
+        VBox.setMargin(timestampLabel, new javafx.geometry.Insets(5, 0, 0, 0));
+
+        if(!isSender && groupIdChattingWith.getValue() != -1){
+            messageContentContainer.getChildren().add(senderLabel);
+        }
+
+        messageContentContainer.getChildren().addAll(messageImage, timestampLabel);
+
         if (isSender) {
-            messageContainer.getChildren().addAll(messageImage, userAvatar);
+            messageContainer.getChildren().addAll(messageContentContainer, userAvatar);
         } else {
-            messageContainer.getChildren().addAll(userAvatar, messageImage);
+            messageContainer.getChildren().addAll(userAvatar, messageContentContainer);
         }
 
         this.messagesContainer.getChildren().add(messageContainer);

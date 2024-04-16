@@ -8,6 +8,8 @@ public class Message {
 
     private Integer groupId;
 
+    private String timestamp;
+
     public Message(String sender, String receiver, String content) {
         this.sender = sender;
         this.receiver = receiver;
@@ -45,5 +47,13 @@ public class Message {
 
     public void setGroupId(Integer groupId) {
         this.groupId = groupId;
+    }
+
+    public String getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(String timestamp) {
+        this.timestamp = timestamp;
     }
 }
