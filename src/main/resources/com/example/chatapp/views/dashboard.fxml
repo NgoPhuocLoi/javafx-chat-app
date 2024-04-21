@@ -30,6 +30,9 @@
                            <image>
                               <Image url="@../../../../images/icons8-avatar-48.png" />
                            </image>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
                         </ImageView>
                         <Label fx:id="currentLoggedInUsername" text="Ngo Phuoc Loi" textFill="WHITE">
                            <font>
@@ -180,6 +183,9 @@
                      <image>
                         <Image url="@../../../../images/icons8-attachment-50.png" />
                      </image>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
                   </ImageView>
                   <TextField fx:id="chatInput" onKeyPressed="#onChatInputEnter" prefHeight="36.0" prefWidth="415.0" HBox.hgrow="ALWAYS">
                      <HBox.margin>

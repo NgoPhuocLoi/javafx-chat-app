@@ -97,7 +97,7 @@ public class DashboardController implements Initializable {
         fc.getExtensionFilters().add(imageFilter);
         File file = fc.showOpenDialog(stage);
         if (file != null) {
-            System.out.println(file.toURI().toString());
+            System.out.println(file.toURI());
             String uploadedImageUrl = CloudinaryUploader.upload(file.getPath());
             try {
                 user.getOutputStream().writeUTF("CHANGE_AVATAR," + user.getUsername() + "," + uploadedImageUrl);

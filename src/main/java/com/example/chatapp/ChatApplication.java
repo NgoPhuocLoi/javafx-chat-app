@@ -12,7 +12,7 @@ public class ChatApplication extends Application {
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(ChatApplication.class.getResource("views/login.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
-        stage.setTitle("Chitchat 1");
+        stage.setTitle("Chitchat");
         stage.setScene(scene);
         stage.show();
 
@@ -27,6 +27,7 @@ public class ChatApplication extends Application {
         thirdStage.setTitle("ChitChat 3");
         thirdStage.setScene(new Scene(new FXMLLoader(ChatApplication.class.getResource("views/login.fxml")).load()));
         thirdStage.show();
+
     }
 
     public static void main(String[] args) {
